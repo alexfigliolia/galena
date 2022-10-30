@@ -27,6 +27,15 @@ export class Empire {
   }
 
   /**
+   * All State
+   *
+   * Returns an iterable of the currently available states
+   */
+  public static get allStates() {
+    return this._state.values();
+  }
+
+  /**
    * Get State
    *
    * Returns a `State` instance by name

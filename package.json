@@ -1,6 +1,6 @@
 {
   "name": "galena",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Lighting fast framework-agnostic state",
   "main": "lib/galena.js",
   "unpkg": "dist/galena.js",
@@ -36,7 +36,8 @@
   },
   "keywords": [
     "state",
-    "state manager"
+    "state manager",
+    "application state"
   ],
   "author": "Alex Figliolia",
   "license": "MIT",
