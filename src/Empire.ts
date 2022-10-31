@@ -12,17 +12,17 @@ import { Emitter } from "./Emitter";
  * `subscribe`, and `unsubscribe` methods
  */
 export class Empire {
-  private static _state = new Map<string, State<any>>();
-  public static stateUpdateID = new AutoIncrementingID();
-  private static subscriptionID = new AutoIncrementingID();
-  private static subscriptions = new Map<string, EmpireSubscription[]>();
+  private _state = new Map<string, State<any>>();
+  public stateUpdateID = new AutoIncrementingID();
+  private subscriptionID = new AutoIncrementingID();
+  private subscriptions = new Map<string, EmpireSubscription[]>();
 
   /**
    * State
    *
    * Returns the current value for the Empire state
    */
-  public static get state() {
+  public get state() {
     return this._state;
   }
 
@@ -31,7 +31,7 @@ export class Empire {
    *
    * Returns an iterable of the currently available states
    */
-  public static get allStates() {
+  public get allStates() {
     return this._state.values();
   }
 
@@ -40,7 +40,7 @@ export class Empire {
    *
    * Returns a `State` instance by name
    */
-  public static getState<T = any>(name: string) {
+  public getState<T = any>(name: string) {
     if (!this._state.get(name)) {
       throw new Error(`No state exists for the name ${name}`);
     }
@@ -54,7 +54,7 @@ export class Empire {
    *
    * Note: This is primarily for internal usage
    */
-  public static add<T>(key: string, state: State<T>) {
+  public add<T>(key: string, state: State<T>) {
     this._state.set(key, state);
   }
 
@@ -68,7 +68,7 @@ export class Empire {
    * Note: This is slower than subscribing to individual `States`
    * within the `Empire`
    */
-  public static subscribe(func: (state: Map<string, State<any>>) => void) {
+  public subscribe(func: (state: Map<string, State<any>>) => void) {
     const ID = this.subscriptionID.nextID;
     const IDs: { name: string; ID: string }[] = [];
     for (const [name, State] of this._state) {
@@ -88,7 +88,7 @@ export class Empire {
    *
    * Removes your `Empire State` subscription by ID
    */
-  public static unsubscribe(ID: string) {
+  public unsubscribe(ID: string) {
     const IDs = this.subscriptions.get(ID) || [];
     IDs.forEach(({ name, ID }) => {
       const state = this.getState(name);
@@ -104,7 +104,7 @@ export class Empire {
    * 1. Destroys all `State` instances and subscriptions,
    * 2. Resets the autoIncrementingId's and the Emitter
    */
-  public static destroy() {
+  public destroy() {
     this._state = new Map<string, State<any>>();
     this.stateUpdateID.destroy();
     this.subscriptionID.destroy();

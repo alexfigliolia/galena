@@ -3,31 +3,33 @@ import { DevTool } from "../DevTool";
 import { Empire } from "../Empire";
 import { State } from "../State";
 
+const empire = new Empire();
+
 describe("State", () => {
   afterEach(() => {
     MockInterfaces.restoreAllMocks();
-    Empire.destroy();
+    empire.destroy();
   });
 
   describe("The Empire State object", () => {
     it("Adds states to the global state", () => {
-      const toggle = new State<boolean>("toggle", false);
-      const someState = new State<{ someState: boolean }>("some-state", { someState: false });
-      expect(Empire.getState("toggle")).toEqual(toggle);
-      expect(Empire.getState("some-state")).toEqual(someState);
+      const toggle = new State<boolean>(empire, "toggle", false);
+      const someState = new State<{ someState: boolean }>(empire, "some-state", { someState: false });
+      expect(empire.getState("toggle")).toEqual(toggle);
+      expect(empire.getState("some-state")).toEqual(someState);
     });
 
     it("Updates state on the global state", () => {
-      const toggle = new State<boolean[]>("toggle", [false]);
-      const someState = new State<{ someState: boolean }>("some-state", { someState: false });
+      const toggle = new State<boolean[]>(empire, "toggle", [false]);
+      const someState = new State<{ someState: boolean }>(empire, "some-state", { someState: false });
       toggle.update((state) => {
         state[0] = true;
       });
       someState.update((state) => {
         state.someState = true;
       });
-      expect(Empire.getState("some-state")?.state.someState).toEqual(true);
-      expect(Empire.getState("toggle")?.state).toEqual([true]);
+      expect(empire.getState("some-state")?.state.someState).toEqual(true);
+      expect(empire.getState("toggle")?.state).toEqual([true]);
     });
   });
 
@@ -36,7 +38,7 @@ describe("State", () => {
       beforeEach(() => {
         DevTool.enableLogging();
         MockInterfaces.mockObject(console, "log");
-        const toggle = new State<boolean[]>("toggle", [false]);
+        const toggle = new State<boolean[]>(empire, "toggle", [false]);
         toggle.update((state) => {
           state[0] = true;
         });
@@ -47,7 +49,7 @@ describe("State", () => {
       });
 
       it("Devtool logs when updating state", () => {
-        const someState = new State<{ someState: boolean }>("some-state", { someState: false });
+        const someState = new State<{ someState: boolean }>(empire, "some-state", { someState: false });
         someState.update((state) => {
           state.someState = true;
         });
@@ -55,7 +57,7 @@ describe("State", () => {
       });
 
       it("Devtool logs the transitioning state object", () => {
-        const toggle = new State<boolean[]>("toggle", [false]);
+        const toggle = new State<boolean[]>(empire, "toggle", [false]);
         toggle.update((state) => {
           state[0] = true;
         });
@@ -70,7 +72,7 @@ describe("State", () => {
       beforeEach(() => {
         DevTool.enablePerformance();
         MockInterfaces.mockObject(console, "log");
-        const toggle = new State<boolean[]>("toggle", [false]);
+        const toggle = new State<boolean[]>(empire, "toggle", [false]);
         toggle.update((state) => {
           state[0] = true;
         });
@@ -81,7 +83,7 @@ describe("State", () => {
       });
 
       it("Devtool logs performance profiling when updating state", () => {
-        const someState = new State<{ someState: boolean }>("some-state", { someState: false });
+        const someState = new State<{ someState: boolean }>(empire, "some-state", { someState: false });
         someState.update((state) => {
           state.someState = true;
         });
@@ -89,7 +91,7 @@ describe("State", () => {
       });
 
       it("Devtool logs the state's transition duration", () => {
-        const toggle = new State<boolean[]>("toggle", [false]);
+        const toggle = new State<boolean[]>(empire, "toggle", [false]);
         toggle.update((state) => {
           state[0] = true;
         });
@@ -102,7 +104,7 @@ describe("State", () => {
 
   describe("Subscriptions", () => {
     it("State updates trigger subscriptions from State instances", () => {
-      const toggle = new State<boolean[]>("toggle", [false]);
+      const toggle = new State<boolean[]>(empire, "toggle", [false]);
       const subscription = jest.fn().mockImplementation((state) => state);
       toggle.subscribe(subscription);
       toggle.update((state) => {
@@ -112,7 +114,7 @@ describe("State", () => {
     });
 
     it("State updates do not trigger removed subscriptions", () => {
-      const toggle = new State<boolean[]>("toggle", [false]);
+      const toggle = new State<boolean[]>(empire, "toggle", [false]);
       const subscription = jest.fn().mockImplementation((state) => state);
       const ID = toggle.subscribe(subscription);
       toggle.unsubscribe(ID);
@@ -123,9 +125,9 @@ describe("State", () => {
     });
 
     it("State updates trigger subscriptions from the Empire", () => {
-      const toggle = new State<boolean[]>("toggle", [false]);
+      const toggle = new State<boolean[]>(empire, "toggle", [false]);
       const subscription = jest.fn().mockImplementation((state) => state);
-      Empire.getState<boolean[]>("toggle")?.subscribe(subscription);
+      empire.getState<boolean[]>("toggle")?.subscribe(subscription);
       toggle.update((state) => {
         state[0] = true;
       });
@@ -133,10 +135,10 @@ describe("State", () => {
     });
 
     it("State updates do not trigger removed subscriptions from the Empire", () => {
-      const toggle = new State<boolean[]>("toggle", [false]);
+      const toggle = new State<boolean[]>(empire, "toggle", [false]);
       const subscription = jest.fn().mockImplementation((state) => state);
-      const ID = Empire.getState<boolean[]>("toggle")?.subscribe(subscription);
-      Empire.getState<boolean[]>("toggle")?.unsubscribe(ID);
+      const ID = empire.getState<boolean[]>("toggle")?.subscribe(subscription);
+      empire.getState<boolean[]>("toggle")?.unsubscribe(ID);
       toggle.update((state) => {
         state[0] = true;
       });
@@ -144,9 +146,9 @@ describe("State", () => {
     });
 
     it("Empire subscriptions update as the result of a State update", () => {
-      const toggle = new State<boolean[]>("toggle", [false]);
+      const toggle = new State<boolean[]>(empire, "toggle", [false]);
       const subscription = jest.fn().mockImplementation((state) => state);
-      Empire.subscribe(subscription);
+      empire.subscribe(subscription);
       toggle.update((state) => {
         state[0] = true;
       });
@@ -154,10 +156,10 @@ describe("State", () => {
     });
 
     it("Empire subscriptions do not update after they are removed", () => {
-      const toggle = new State<boolean[]>("toggle", [false]);
+      const toggle = new State<boolean[]>(empire, "toggle", [false]);
       const subscription = jest.fn().mockImplementation((state) => state);
-      const ID = Empire.subscribe(subscription);
-      Empire.unsubscribe(ID);
+      const ID = empire.subscribe(subscription);
+      empire.unsubscribe(ID);
       toggle.update((state) => {
         state[0] = true;
       });

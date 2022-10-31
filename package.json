@@ -1,6 +1,6 @@
 {
   "name": "galena",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Lighting fast framework-agnostic state",
   "main": "lib/galena.js",
   "unpkg": "dist/galena.js",

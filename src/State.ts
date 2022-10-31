@@ -1,6 +1,6 @@
 import { DevTool } from "./DevTool";
 import { Emitter } from "./Emitter";
-import { Empire } from "./Empire";
+import type { Empire } from "./Empire";
 
 /**
  * State
@@ -14,10 +14,12 @@ import { Empire } from "./Empire";
 export class State<T> {
   private _state: T;
   public name: string;
-  constructor(name: string, state: T) {
+  private Empire: Empire;
+  constructor(Empire: Empire, name: string, state: T) {
     this.name = name;
     this._state = state;
-    Empire.add(this.name, this);
+    this.Empire = Empire;
+    this.Empire.add(this.name, this);
   }
 
   /**
@@ -51,10 +53,10 @@ export class State<T> {
    * and profiling for state transitions
    */
   private updateWithDevtool(func: (state: T) => void) {
-    const nextID = Empire.stateUpdateID.nextID;
-    DevTool.onPrevState(this.name, Empire.state, nextID);
+    const nextID = this.Empire.stateUpdateID.nextID;
+    DevTool.onPrevState(this.name, this.Empire.state, nextID);
     func(this._state);
-    DevTool.onNextState(this.name, Empire.state, nextID);
+    DevTool.onNextState(this.name, this.Empire.state, nextID);
   }
 
   /**
