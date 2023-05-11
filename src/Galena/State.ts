@@ -157,9 +157,11 @@ export class State<T extends any = any> extends Reactivity<T> {
       if (returnValue instanceof Promise) {
         void returnValue.then(() => {
           void this.emitUpdate();
+          this.onUpdate(this);
         });
       } else {
         void this.emitUpdate();
+        this.onUpdate(this);
       }
     };
   }
@@ -168,14 +170,12 @@ export class State<T extends any = any> extends Reactivity<T> {
    * Emit Update
    *
    * Schedules a microtask for notifying subscribers of state
-   * changes and invokes the `onUpdate` lifecycle hook
+   * changes
    */
   private emitUpdate() {
-    const promise = Promise.resolve(() => {
+    void Promise.resolve(() => {
       this.emitter.emit(this.name, this);
     });
-    this.onUpdate(this);
-    void promise;
   }
 
   /**

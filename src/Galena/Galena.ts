@@ -7,7 +7,7 @@ import { State } from "Galena/State";
 /**
  * ### Galena
  *
- * Lightening fast global state with lazy slices.
+ * Lightning fast global state with lazy slices.
  *
  * #### Creating State
  * ```typescript
@@ -69,6 +69,15 @@ export class Galena<T extends Record<string, State<any>>> {
     this.mutable[name] = state;
     this.reIndexSubscriptions(name);
     return state;
+  }
+
+  /**
+   * Get Slice
+   *
+   * Returns a `State` instance by key
+   */
+  public getSlice<K extends keyof T>(key: K): T[K] {
+    return this.state[key];
   }
 
   /**
