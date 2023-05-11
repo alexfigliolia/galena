@@ -166,8 +166,8 @@ class State extends Reactivity_1.Reactivity {
      * changes
      */
     emitUpdate() {
-        void Promise.resolve(() => {
-            this.emitter.emit(this.name, this);
+        return new Promise((resolve) => {
+            resolve(this.emitter.emit(this.name, this));
         });
     }
     /**

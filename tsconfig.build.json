@@ -20,7 +20,7 @@
 		"skipLibCheck": true,
 		"baseUrl": "./src",
 		"paths": {
-			"galena/*": [
+			"Galena/*": [
 				"Galena/*"
 			],
 			"Middleware/*": [

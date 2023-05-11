@@ -173,8 +173,8 @@ export class State<T extends any = any> extends Reactivity<T> {
    * changes
    */
   private emitUpdate() {
-    void Promise.resolve(() => {
-      this.emitter.emit(this.name, this);
+    return new Promise((resolve) => {
+      resolve(this.emitter.emit(this.name, this));
     });
   }
 

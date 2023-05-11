@@ -1,6 +1,6 @@
 import { EventEmitter } from "@figliolia/event-emitter";
 import type { Middleware } from "../Middleware/Middleware";
-import type { State } from "../Galena/State";
+import type { State } from "./State";
 /**
  * Reactivity
  *

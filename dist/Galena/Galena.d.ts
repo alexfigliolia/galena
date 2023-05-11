@@ -1,5 +1,5 @@
 import type { Middleware } from "../Middleware/Middleware";
-import { State } from "../Galena/State";
+import { State } from "./State";
 /**
  * ### Galena
  *

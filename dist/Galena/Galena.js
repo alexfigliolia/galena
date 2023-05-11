@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Galena = void 0;
 const event_emitter_1 = require("@figliolia/event-emitter");
-const State_1 = require("../Galena/State");
+const State_1 = require("./State");
 /**
  * ### Galena
  *
