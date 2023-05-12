@@ -50,7 +50,7 @@ export class Galena<T extends Record<string, State<any>>> {
   private middleware: Middleware[] = [];
   private readonly IDs = new AutoIncrementingID();
   private subscriptions = new Map<string, [state: string, ID: string][]>();
-  constructor(middleware: Middleware[] = []) {
+  constructor(...middleware: Middleware[]) {
     this.middleware = middleware;
   }
 
@@ -138,19 +138,19 @@ export class Galena<T extends Record<string, State<any>>> {
    * subscriptions
    */
   private reIndexSubscriptions(name: string) {
-    for (const [ID, value] of this.subscriptions) {
-      for (const [state, subscriptionID] of value) {
+    for (const [ID, sliceSubscriptions] of this.subscriptions) {
+      for (const [state, subscriptionID] of sliceSubscriptions) {
         const callback = this.state[state]["emitter"]
           .get(state)
           ?.get(subscriptionID);
         if (callback) {
-          value.push([
+          sliceSubscriptions.push([
             name,
             this.state[name].subscribe(() => {
               void callback(this.state);
             }),
           ]);
-          this.subscriptions.set(ID, value);
+          this.subscriptions.set(ID, sliceSubscriptions);
           break;
         }
       }

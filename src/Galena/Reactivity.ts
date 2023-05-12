@@ -28,7 +28,6 @@ export class Reactivity<T extends any = any> {
   public registerMiddleware(...middleware: Middleware[]) {
     this.middleware.push(...middleware);
   }
-
   /**
    * On Before Update
    *

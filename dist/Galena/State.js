@@ -149,26 +149,23 @@ class State extends Reactivity_1.Reactivity {
             const returnValue = func(...args);
             if (returnValue instanceof Promise) {
                 void returnValue.then(() => {
-                    void this.emitUpdate();
-                    this.onUpdate(this);
+                    this.scheduleUpdate();
                 });
             }
             else {
-                void this.emitUpdate();
-                this.onUpdate(this);
+                this.scheduleUpdate();
             }
         };
     }
     /**
-     * Emit Update
+     * Schedule Update
      *
-     * Schedules a microtask for notifying subscribers of state
-     * changes
+     * Schedules an update to State subscribers and emits the
+     * `onUpdate` lifecycle hook
      */
-    emitUpdate() {
-        return new Promise((resolve) => {
-            resolve(this.emitter.emit(this.name, this));
-        });
+    scheduleUpdate() {
+        this.onUpdate(this);
+        void Promise.resolve(this.emitter.emit(this.name, this));
     }
     /**
      * Subscribe

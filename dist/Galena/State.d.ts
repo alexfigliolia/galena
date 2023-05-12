@@ -130,12 +130,12 @@ export declare class State<T extends any = any> extends Reactivity<T> {
      */
     mutation<F extends (...args: any[]) => any>(func: F): (...args: Parameters<F>) => void;
     /**
-     * Emit Update
+     * Schedule Update
      *
-     * Schedules a microtask for notifying subscribers of state
-     * changes
+     * Schedules an update to State subscribers and emits the
+     * `onUpdate` lifecycle hook
      */
-    private emitUpdate;
+    private scheduleUpdate;
     /**
      * Subscribe
      *

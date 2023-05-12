@@ -45,7 +45,7 @@ const State_1 = require("./State");
  * ```
  */
 class Galena {
-    constructor(middleware = []) {
+    constructor(...middleware) {
         this.state = {};
         this.middleware = [];
         this.IDs = new event_emitter_1.AutoIncrementingID();
@@ -132,18 +132,18 @@ class Galena {
      */
     reIndexSubscriptions(name) {
         var _a;
-        for (const [ID, value] of this.subscriptions) {
-            for (const [state, subscriptionID] of value) {
+        for (const [ID, sliceSubscriptions] of this.subscriptions) {
+            for (const [state, subscriptionID] of sliceSubscriptions) {
                 const callback = (_a = this.state[state]["emitter"]
                     .get(state)) === null || _a === void 0 ? void 0 : _a.get(subscriptionID);
                 if (callback) {
-                    value.push([
+                    sliceSubscriptions.push([
                         name,
                         this.state[name].subscribe(() => {
                             void callback(this.state);
                         }),
                     ]);
-                    this.subscriptions.set(ID, value);
+                    this.subscriptions.set(ID, sliceSubscriptions);
                     break;
                 }
             }

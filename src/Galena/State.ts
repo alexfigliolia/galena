@@ -156,26 +156,23 @@ export class State<T extends any = any> extends Reactivity<T> {
       const returnValue = func(...args);
       if (returnValue instanceof Promise) {
         void returnValue.then(() => {
-          void this.emitUpdate();
-          this.onUpdate(this);
+          this.scheduleUpdate();
         });
       } else {
-        void this.emitUpdate();
-        this.onUpdate(this);
+        this.scheduleUpdate();
       }
     };
   }
 
   /**
-   * Emit Update
+   * Schedule Update
    *
-   * Schedules a microtask for notifying subscribers of state
-   * changes
+   * Schedules an update to State subscribers and emits the
+   * `onUpdate` lifecycle hook
    */
-  private emitUpdate() {
-    return new Promise<void>((resolve) => {
-      resolve(this.emitter.emit(this.name, this));
-    });
+  private scheduleUpdate() {
+    this.onUpdate(this);
+    void Promise.resolve(this.emitter.emit(this.name, this));
   }
 
   /**
