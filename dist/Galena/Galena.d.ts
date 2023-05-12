@@ -46,7 +46,7 @@ export declare class Galena<T extends Record<string, State<any>>> {
     private middleware;
     private readonly IDs;
     private subscriptions;
-    constructor(...middleware: Middleware[]);
+    constructor(middleware: Middleware[]);
     /**
      * Create Slice
      *

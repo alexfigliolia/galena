@@ -50,7 +50,7 @@ export class Galena<T extends Record<string, State<any>>> {
   private middleware: Middleware[] = [];
   private readonly IDs = new AutoIncrementingID();
   private subscriptions = new Map<string, [state: string, ID: string][]>();
-  constructor(...middleware: Middleware[]) {
+  constructor(middleware: Middleware[]) {
     this.middleware = middleware;
   }
 

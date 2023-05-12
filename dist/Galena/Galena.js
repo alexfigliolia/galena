@@ -45,7 +45,7 @@ const State_1 = require("./State");
  * ```
  */
 class Galena {
-    constructor(...middleware) {
+    constructor(middleware) {
         this.state = {};
         this.middleware = [];
         this.IDs = new event_emitter_1.AutoIncrementingID();
