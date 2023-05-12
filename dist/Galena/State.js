@@ -150,12 +150,10 @@ class State extends Reactivity_1.Reactivity {
             if (returnValue instanceof Promise) {
                 void returnValue.then(() => {
                     void this.emitUpdate();
-                    this.onUpdate(this);
                 });
             }
             else {
                 void this.emitUpdate();
-                this.onUpdate(this);
             }
         };
     }
@@ -167,7 +165,9 @@ class State extends Reactivity_1.Reactivity {
      */
     emitUpdate() {
         return new Promise((resolve) => {
-            resolve(this.emitter.emit(this.name, this));
+            this.onUpdate(this);
+            this.emitter.emit(this.name, this);
+            resolve();
         });
     }
     /**

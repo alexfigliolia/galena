@@ -157,11 +157,9 @@ export class State<T extends any = any> extends Reactivity<T> {
       if (returnValue instanceof Promise) {
         void returnValue.then(() => {
           void this.emitUpdate();
-          this.onUpdate(this);
         });
       } else {
         void this.emitUpdate();
-        this.onUpdate(this);
       }
     };
   }
@@ -173,8 +171,10 @@ export class State<T extends any = any> extends Reactivity<T> {
    * changes
    */
   private emitUpdate() {
-    return new Promise((resolve) => {
-      resolve(this.emitter.emit(this.name, this));
+    return new Promise<void>((resolve) => {
+      this.onUpdate(this);
+      this.emitter.emit(this.name, this);
+      resolve();
     });
   }
 
