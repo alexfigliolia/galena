@@ -149,12 +149,12 @@ class State extends Reactivity_1.Reactivity {
             const returnValue = func(...args);
             if (returnValue instanceof Promise) {
                 void returnValue.then(() => {
-                    // void this.emitUpdate();
+                    void this.emitUpdate();
                     this.onUpdate(this);
                 });
             }
             else {
-                // void this.emitUpdate();
+                void this.emitUpdate();
                 this.onUpdate(this);
             }
         };

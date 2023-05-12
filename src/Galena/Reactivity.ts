@@ -36,9 +36,10 @@ export class Reactivity<T extends any = any> {
    * lifecycle event
    */
   protected onBeforeUpdate(state: State<T>) {
-    this.middleware.forEach((middleware) => {
-      middleware.onBeforeUpdate(state);
-    });
+    const maxIndex = this.middleware.length - 1;
+    for (let i = maxIndex; i > -1; i--) {
+      this.middleware[i].onBeforeUpdate(state);
+    }
   }
 
   /**
@@ -48,8 +49,9 @@ export class Reactivity<T extends any = any> {
    * lifecycle event
    */
   protected onUpdate(state: State<T>) {
-    this.middleware.forEach((middleware) => {
-      middleware.onUpdate(state);
-    });
+    const maxIndex = this.middleware.length - 1;
+    for (let i = maxIndex; i > -1; i--) {
+      this.middleware[i].onUpdate(state);
+    }
   }
 }
