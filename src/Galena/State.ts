@@ -1,4 +1,7 @@
-import { Reactivity } from "./Reactivity";
+import { SupportedEvents } from "Middleware/types";
+import type { Middleware } from "Middleware/Middleware";
+import { EventEmitter } from "@figliolia/event-emitter";
+import type { MutationEvent } from "./types";
 
 /**
  * ### State
@@ -58,14 +61,15 @@ import { Reactivity } from "./Reactivity";
  * });
  * ```
  */
-export class State<T extends any = any> extends Reactivity<T> {
+export class State<T extends any = any> {
+  public state: T;
   public readonly name: string;
-  public currentState: T;
   public readonly initialState: T;
+  private readonly middleware: Middleware[] = [];
+  private readonly emitter = new EventEmitter<MutationEvent<T>>();
   constructor(name: string, initialState: T) {
-    super();
     this.name = name;
-    this.currentState = initialState;
+    this.state = initialState;
     this.initialState = State.clone(initialState);
   }
 
@@ -75,7 +79,7 @@ export class State<T extends any = any> extends Reactivity<T> {
    * Returns a readonly snapshot of the current state
    */
   public getState() {
-    return this.currentState as Readonly<T>;
+    return this.state as Readonly<T>;
   }
 
   /**
@@ -84,7 +88,7 @@ export class State<T extends any = any> extends Reactivity<T> {
    * Returns a state value by key
    */
   public get<K extends keyof T>(key: K): T[K] {
-    return this.currentState[key];
+    return this.state[key];
   }
 
   /**
@@ -103,21 +107,23 @@ export class State<T extends any = any> extends Reactivity<T> {
    *
    * ##### Synchronous updates
    * ```typescript
-   * MyState.update((state) => {
+   * MyState.update((state, initialState) => {
    *   state.listItems.push(5);
    * });
    * ```
    * ##### Asynchronous updates
    * ```typescript
-   * MyState.update(async (state) => {
+   * MyState.update(async (state, initialState) => {
    *   const listItems = await fetch("/list-items");
    *   state.listItems = listItems;
    * });
    * ```
    */
-  public update = this.mutation((func: (state: T) => void | Promise<void>) => {
-    return func(this.currentState);
-  });
+  public update = this.mutation(
+    (func: (state: T, initialState: T) => void | Promise<void>) => {
+      return func(this.state, this.initialState);
+    }
+  );
 
   /**
    * Reset
@@ -125,7 +131,7 @@ export class State<T extends any = any> extends Reactivity<T> {
    * Resets the current state to its initial state
    */
   public reset = this.mutation(() => {
-    this.currentState = State.clone(this.initialState);
+    this.state = State.clone(this.initialState);
   });
 
   /**
@@ -140,7 +146,7 @@ export class State<T extends any = any> extends Reactivity<T> {
    * ```
    * class ExtensionOfState<T> extends State<T> {
    *    public updateListItems = this.mutation((listItems: string[]) => {
-   *       this.currentState.listItems = listItems;
+   *       this.state.listItems = listItems;
    *    });
    * }
    * ```
@@ -152,7 +158,7 @@ export class State<T extends any = any> extends Reactivity<T> {
    */
   public mutation<F extends (...args: any[]) => any>(func: F) {
     return (...args: Parameters<F>): void => {
-      this.onBeforeUpdate(this);
+      this.lifeCycleEvent(SupportedEvents.onBeforeUpdate);
       const returnValue = func(...args);
       if (returnValue instanceof Promise) {
         void returnValue.then(() => {
@@ -171,8 +177,18 @@ export class State<T extends any = any> extends Reactivity<T> {
    * `onUpdate` lifecycle hook
    */
   private scheduleUpdate() {
-    this.onUpdate(this);
+    this.lifeCycleEvent(SupportedEvents.onUpdate);
     void Promise.resolve(this.emitter.emit(this.name, this));
+  }
+
+  /**
+   * Register Middleware
+   *
+   * Caches a `Middleware` instance and invokes its
+   * lifecycle subscriptions on all state transitions
+   */
+  public registerMiddleware(...middleware: Middleware[]) {
+    this.middleware.push(...middleware);
   }
 
   /**
@@ -194,6 +210,18 @@ export class State<T extends any = any> extends Reactivity<T> {
    */
   public unsubscribe(ID: string) {
     return this.emitter.off(this.name, ID);
+  }
+
+  /**
+   * Life Cycle Event
+   *
+   * Triggers a life cycle event for each registered middleware
+   */
+  private lifeCycleEvent<E extends SupportedEvents>(event: E) {
+    const maxIndex = this.middleware.length - 1;
+    for (let i = maxIndex; i > -1; i--) {
+      this.middleware[i][event](this);
+    }
   }
 
   /**

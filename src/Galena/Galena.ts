@@ -5,51 +5,59 @@ import type { Middleware } from "Middleware/Middleware";
 import { State } from "Galena/State";
 
 /**
- * ### Galena
+ * ## Galena
  *
  * Lightning fast global state with lazy slices.
  *
- * #### Creating State
+ * ### Creating State
  * ```typescript
- * const State = new Galena([...middleware]);
+ * // AppState.ts
+ * import { Galena } from "galena";
  *
- * const NavigationState = State.createSlice("navigation", {
+ * const AppState = new Galena([...middleware]);
+ *
+ * const NavigationState = AppState.createSlice("navigation", {
  *   currentRoute: "/",
  *   userID: "12345",
  *   permittedRoutes: ["/*"]
  * });
  * ```
  *
- * #### Subscribing to State Changes
- * ##### Using the Galena Instance
+ * ### Subscribing to State Changes
+ * #### Using the Galena Instance
  * ```typescript
- * State.subscribe(globalState => {
- *  const currentRoute = globalState.navigation.get("currentRoute");
- *  // do something on state changes!
+ * import { AppState } from "./AppState";
+ *
+ * AppState.subscribe(appState => {
+ *  const navState = appState.getSlice("navigation");
+ *  const currentRoute = navState.get("currentRoute");
+ *  // do something with state changes!
  * });
  * ```
- * ##### Using the Slice Instance
+ * #### Using the Slice Instance
  * ```typescript
  * NavigationState.subscribe(navigation => {
  *  const currentRoute = navigation.get("currentRoute");
- *  // do something on state changes!
+ *  // do something with state changes!
  * });
  * ```
  *
- * #### Mutating State
+ * ### Mutating State
  * ```typescript
- * NavigationState.update(currentState => {
- *  currentState.currentRoute = "/profile";
+ * NavigationState.update(state => {
+ *  state.currentRoute = "/profile";
  *  // You can mutate state without creating new objects!
- *  // Mutations such as this one will propagate to subscriptions!
  * });
  * ```
  */
 export class Galena<T extends Record<string, State<any>>> {
   public readonly state = {} as T;
-  private middleware: Middleware[] = [];
+  private readonly middleware: Middleware[] = [];
   private readonly IDs = new AutoIncrementingID();
-  private subscriptions = new Map<string, [state: string, ID: string][]>();
+  private readonly subscriptions = new Map<
+    string,
+    [state: string, ID: string][]
+  >();
   constructor(middleware: Middleware[]) {
     this.middleware = middleware;
   }

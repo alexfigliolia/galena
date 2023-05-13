@@ -20,7 +20,7 @@ export class Logger extends Middleware {
   scopedMutation: ((...args: any[]) => any) | null = null;
 
   override onBeforeUpdate(state: State) {
-    this.previousState = State.clone(state.currentState);
+    this.previousState = State.clone(state.state);
   }
 
   override onUpdate(state: State) {
