@@ -71,8 +71,12 @@ export class Galena<T extends Record<string, State<any>>> {
    * state will automatically receive updates when your new slice's
    * state updates
    */
-  public createSlice<S extends any>(name: string, initialState: S): State<S> {
-    const state = new State(name, initialState);
+  public createSlice<S extends any>(
+    name: string,
+    initialState: S,
+    Model: typeof State<S> = State
+  ): State<S> {
+    const state = new Model(name, initialState);
     state.registerMiddleware(...this.middleware);
     this.mutable[name] = state;
     this.reIndexSubscriptions(name);

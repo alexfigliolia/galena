@@ -5,4 +5,7 @@ export enum SupportedEvents {
   "onBeforeUpdate" = "onBeforeUpdate",
 }
 
-export type MiddlewareEvent = Record<SupportedEvents, State>;
+export type MiddlewareEvent<T extends any = any> = Record<
+  SupportedEvents,
+  State<T>
+>;

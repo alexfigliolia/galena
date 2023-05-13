@@ -30,8 +30,8 @@ import { SupportedEvents } from "Middleware/types";
  * }
  * ```
  */
-export class Middleware {
-  public static Emitter = new EventEmitter<MiddlewareEvent>();
+export class Middleware<T extends any = any> {
+  public static Emitter = new EventEmitter<MiddlewareEvent<any>>();
   constructor() {
     const extension = Object.getPrototypeOf(this);
     const methods = Object.getOwnPropertyNames(extension);
@@ -59,12 +59,12 @@ export class Middleware {
    *
    * An event emitted each time a `State` mutation is enqueued
    */
-  public onBeforeUpdate(state: State) {}
+  public onBeforeUpdate(state: State<T>) {}
 
   /**
    * On Update
    *
    * An event emitted each time a `State` instance is mutated
    */
-  public onUpdate(state: State) {}
+  public onUpdate(state: State<T>) {}
 }
