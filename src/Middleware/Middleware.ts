@@ -2,7 +2,7 @@ import { EventEmitter } from "@figliolia/event-emitter";
 
 import type { State } from "Galena/State";
 import type { MiddlewareEvent } from "Middleware/types";
-import { SupportedEvents } from "Middleware/types";
+import { MiddlewareEvents } from "Middleware/types";
 
 /**
  * Middleware
@@ -37,7 +37,7 @@ export class Middleware<T extends any = any> {
     const methods = Object.getOwnPropertyNames(extension);
     methods.forEach((event) => {
       if (Middleware.validateEvent(event)) {
-        Middleware.Emitter.on(SupportedEvents[event], this[event]);
+        Middleware.Emitter.on(MiddlewareEvents[event], this[event]);
       }
     });
   }
@@ -48,8 +48,8 @@ export class Middleware<T extends any = any> {
    * Asserts that a given method on an extending class prototype
    * is one of the supported `Galena` lifecycle events
    */
-  private static validateEvent(event: string): event is SupportedEvents {
-    return event in SupportedEvents;
+  private static validateEvent(event: string): event is MiddlewareEvents {
+    return event in MiddlewareEvents;
   }
 
   /* Life Cycle Events */

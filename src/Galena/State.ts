@@ -1,4 +1,4 @@
-import { SupportedEvents } from "Middleware/types";
+import { MiddlewareEvents } from "Middleware/types";
 import type { Middleware } from "Middleware/Middleware";
 import { EventEmitter } from "@figliolia/event-emitter";
 import type { MutationEvent } from "./types";
@@ -158,7 +158,7 @@ export class State<T extends any = any> {
    */
   public mutation<F extends (...args: any[]) => any>(func: F) {
     return (...args: Parameters<F>): void => {
-      this.lifeCycleEvent(SupportedEvents.onBeforeUpdate);
+      this.lifeCycleEvent(MiddlewareEvents.onBeforeUpdate);
       const returnValue = func(...args);
       if (returnValue instanceof Promise) {
         void returnValue.then(() => {
@@ -177,7 +177,7 @@ export class State<T extends any = any> {
    * `onUpdate` lifecycle hook
    */
   private scheduleUpdate() {
-    this.lifeCycleEvent(SupportedEvents.onUpdate);
+    this.lifeCycleEvent(MiddlewareEvents.onUpdate);
     void Promise.resolve(this.emitter.emit(this.name, this));
   }
 
@@ -217,7 +217,7 @@ export class State<T extends any = any> {
    *
    * Triggers a life cycle event for each registered middleware
    */
-  private lifeCycleEvent<E extends SupportedEvents>(event: E) {
+  private lifeCycleEvent<E extends MiddlewareEvents>(event: E) {
     const maxIndex = this.middleware.length - 1;
     for (let i = maxIndex; i > -1; i--) {
       this.middleware[i][event](this);

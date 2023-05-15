@@ -95,7 +95,7 @@ NavigationState.unsubscribe(subscriptionID);
 ```
 
 ### Let's Talk Architecture
-The `Galena` library is designed to promote extension of its features. In doing so, it's possible to achieve a very strong Model and Controller layer for your applications. I'm going to demonstrate a few techniques for not only utilizing `Galena`, but building proprietary Models and Controllers for you applications.
+The `Galena` library is designed to promote extension of its features. In doing so, it's possible to achieve a very strong Model + Controller layer for your applications. I'm going to demonstrate a few techniques for not only utilizing `Galena`, but building proprietary Models and Controllers for your applications.
 
 #### Extending State
 `State`'s are designed to be an out-of-the-box solution for housing any portion of your applications global state. There are benefits however, to extending is functionality to compose proprietary states for your features:
@@ -144,6 +144,7 @@ AppState.getSlice("currentUser").updateUsername("awesomeUser");
 
 AppState.getSlice("currentUser").addConnection("6");
 ```
+Using this extension pattern, each `State` instance can exist as it's own data model with an abstraction layer for proprietary mutations and business logic. Although slightly more complex on the surface, this pattern in very large applications will reduce the complexity of state management significantly. It'll also replicate what one might find at the persistent layer of an application - where persisted data structures are often modeled along side their mutation logic when interacting with a database or GQL Resolver. Because of this, the extension pattern may be beneficial for teams that lean fullstack instead of frontend/backend!
 
 #### Using Middleware
 Now that we've gone over extending `State` to create Models for your application's schemas, let's talk about creating developer tools and enhancements for your application!

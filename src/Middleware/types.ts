@@ -1,11 +1,11 @@
 import type { State } from "Galena/State";
 
-export enum SupportedEvents {
+export enum MiddlewareEvents {
   "onUpdate" = "onUpdate",
   "onBeforeUpdate" = "onBeforeUpdate",
 }
 
 export type MiddlewareEvent<T extends any = any> = Record<
-  SupportedEvents,
+  MiddlewareEvents,
   State<T>
 >;
