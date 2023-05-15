@@ -83,24 +83,6 @@ export class State<T extends any = any> {
   }
 
   /**
-   * Get
-   *
-   * Returns a state value by key
-   */
-  public get<K extends keyof T>(key: K): T[K] {
-    return this.state[key];
-  }
-
-  /**
-   * Default
-   *
-   * Returns the initial state of a given value by key
-   */
-  public default<K extends keyof T>(key: K): T[K] {
-    return this.initialState[key];
-  }
-
-  /**
    * Update
    *
    * Mutates state and notifies any open subscriptions
