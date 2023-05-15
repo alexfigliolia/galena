@@ -109,24 +109,24 @@ export const AppState = new Galena();
 
 // Next Create an extension of State. In this case we'll create one for the current user of our application
 export class UserModel extends State<{
-	userID: string;
-	username: string;
-	connectedUsers: string[];
+  userID: string;
+  username: string;
+  connectedUsers: string[];
 }> {
-	public addConnection = this.mutation((userID: string) => {
-	 this.state.connectedUsers.push(userID);
-	});
+  public addConnection = this.mutation((userID: string) => {
+   this.state.connectedUsers.push(userID);
+  });
 
-	public updateUsername = this.mutation((username: string) => {
-		this.state.username = username;
-	});
+  public updateUsername = this.mutation((username: string) => {
+  this.state.username = username;
+  });
 }
 
 // Let's add the `UserModel` state to our AppState!
 export const CurrentUser = AppState.createSlice("currentUser", { 
-	userID: 1, 
-	username: "currentUser", 
-	connectedUsers: ["2", "3", "4", "5"]
+  userID: 1, 
+  username: "currentUser", 
+  connectedUsers: ["2", "3", "4", "5"]
 }, UserModel);
 ```
 
@@ -168,7 +168,7 @@ import { Galena, Profiler, Logger } from "galena";
 export const AppState = new Galena([new Logger()]);
 
 export const FrequentlyUpdatedState = AppState.createSlice("complexState", { 
-	bigData: new Array(10000).fill("")
+  bigData: new Array(10000).fill("")
 });
 
 // Let's apply profiling to just one complex slice of state
@@ -184,33 +184,33 @@ import { Middleware } from "galena";
 
 // Let's extend the Middleware class from the Galena library
 export class UserModelMiddleware extends Middleware {
-	// A cache for the length of the current users connections
-	private totalConnectedUsers: number | null = null;
+  // A cache for the length of the current users connections
+  private totalConnectedUsers: number | null = null;
 
-	// On each update to the UserModel, let's cache the total number
-	// of user connections
-	override onBeforeUpdate(state: State) {
-		this.totalConnectedUsers = state.get("connectedUsers").length;
-	}
+  // On each update to the UserModel, let's cache the total number
+  // of user connections
+  override onBeforeUpdate(state: State) {
+  this.totalConnectedUsers = state.get("connectedUsers").length;
+  }
 
   // When an update occurs let's see if the length of the
-	// connectedUsers array has changed
+  // connectedUsers array has changed
   override onUpdate(state: State) {
-		const connectedUsers = state.get("connectedUsers");
-		if(
-			this.totalConnectedUsers === null ||
-			connectedUsers.length === this.totalConnectedUsers
-		) {
-			return;
-		}
-		// If the length of user connections has changed, let's validate that
-		// the new connection is in fact a string.
-		const newConnection = connectedUsers[connectedUsers.length - 1];
-		if(typeof newConnection !== "string") {
-			// If we find anything other than a string, let's log or throw an error
-			console.error(`A ${typeof newConnection} was added to the current user's connection array! This can create a bug in production!`)
-		}
-	}
+  const connectedUsers = state.get("connectedUsers");
+  if(
+  this.totalConnectedUsers === null ||
+  connectedUsers.length === this.totalConnectedUsers
+  ) {
+  return;
+  }
+  // If the length of user connections has changed, let's validate that
+  // the new connection is in fact a string.
+  const newConnection = connectedUsers[connectedUsers.length - 1];
+  if(typeof newConnection !== "string") {
+  // If we find anything other than a string, let's log or throw an error
+  console.error(`A ${typeof newConnection} was added to the current user's connection array! This can create a bug in production!`)
+  }
+  }
 }
 ```
 
@@ -225,23 +225,23 @@ const IS_NOT_PRODUCTION = process.env.NODE_ENV !== "production";
 
 const middleware: Middleware[] = [];
 if(IS_NOT_PRODUCTION) {
-	// Let's enjoy some profiling and logging in development mode
-	middleware.push(new Profiler(), new Logger());
+  // Let's enjoy some profiling and logging in development mode
+  middleware.push(new Profiler(), new Logger());
 }
 
 export const AppState = new Galena(middleware);
 
 // Let's add the `UserModel` state to our AppState!
 export const CurrentUser = AppState.createSlice("currentUser", { 
-	userID: 1, 
-	username: "currentUser", 
-	connectedUsers: ["2", "3", "4", "5"]
+  userID: 1, 
+  username: "currentUser", 
+  connectedUsers: ["2", "3", "4", "5"]
 }, UserModel);
 
 if(IS_NOT_PRODUCTION) {
-	// Let's prevent developers from adding non-string values
-	// to the `connectedUsers` array!
-	CurrentUser.registerMiddleware(new UserModelMiddleware());
+  // Let's prevent developers from adding non-string values
+  // to the `connectedUsers` array!
+  CurrentUser.registerMiddleware(new UserModelMiddleware());
 }
 ```
 
