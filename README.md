@@ -16,7 +16,7 @@ yarn add galena
 #### Instantiating Galena
 
 ```typescript
-// Galena.ts
+// AppState.ts
 import { Galena, Logger, Profiler } from "galena";
 import type { Middleware } from "galena";
 
@@ -31,7 +31,7 @@ export const AppState = new Galena(middleware);
 ### Creating a Slice of State
 ```typescript
 // NavigationState.ts
-import { AppState } from "./Galena.ts";
+import { AppState } from "./AppState.ts";
 
 export const NavigationState = AppState.createSlice("navigation", {
   currentRoute: "/",
@@ -40,20 +40,26 @@ export const NavigationState = AppState.createSlice("navigation", {
 });
 ```
 
-Creating state slices using `Galena.createSlice()` will automatically scope your new slice of state to your `Galena` instance. You may then access, subscribe, and update your state using `Galena.getSlice("navigation")` or by accessing the `NavigationState` object directly.
+Creating state slices using `AppState.createSlice()` will automatically scope your new slice of state to your `Galena` instance. You may then access, subscribe, and update your state using `AppState.getSlice("navigation")` or by accessing the `NavigationState` object directly. 
 
-### Updating State Values
-#### Using Your Galena Instance
+You may also create slices of state that are *not* connected to you "global" `Galena` instance. To promote flexibility for developers to organize their state however they wish, developers can import the `State` object directly from `galena` and invoke it by calling `const MyState = new State("myState", /* initial state */)`; This technique can be convenient for extracting smaller amounts of state from an isolated feature that doesn't need to live along side the rest of your application state.
+
+## Mutation and Subscriptions
+
+### Mutating State Values
+You can access and update your state values using your `Galena` instance or using your individual `State` slices
+
+#### Mutating State Using Your Galena Instance
 ```typescript
 // business-logic.ts
-import { AppState } from "./Galena.ts";
+import { AppState } from "./AppState.ts";
 
 AppState.getSlice("navigation").update((state, initialState) => {
   state.currentRoute = "/user-profile";
 });
 ```
 
-#### Using Your Navigation Instance
+#### Mutating State Using Your Navigation Instance
 ```typescript
 // business-logic.ts
 import { NavigationState } from "./NavigationState.ts";
@@ -63,12 +69,14 @@ NavigationState.update((state, initialState) => {
 });
 ```
 
+Mutating state using your individual slices of state will also update your `Galena` instance!
+
 ### Subscribing to State Changes
 
 #### Using Your Global Application State
 ```typescript
 // business-logic.ts
-import { AppState } from "./Galena.ts";
+import { AppState } from "./AppState.ts";
 
 const subscriptionID = AppState.subscribe(state => {
   const navState = state.getSlice("navigation");
