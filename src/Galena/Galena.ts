@@ -123,14 +123,47 @@ export class Galena<T extends Record<string, State<any>>> {
   /**
    * Subscribe
    *
-   * Registers a callback on each `State` instance and is invoked
-   * each time your state changes. Using `Galena`'s `subscribe`
-   * method, although highly performant, can be less performant
-   * than subscribing directly to the `State` instance.
-   *
-   * Returns a subscription ID
+   * Given the name of a unit of state, this method registers
+   * a subscription on the target state instance. The callback
+   * you provide will execute each time state changes. Returns
+   * a unique identifier for your subscription. To clean up your
+   * subscription, call `Galena.unsubscribe()` with the ID returned
+   * by this method
    */
-  public subscribe(callback: (state: Galena<T>) => void) {
+  public subscribe<K extends keyof T>(
+    name: K,
+    callback: Parameters<T[K]["subscribe"]>["0"]
+  ) {
+    const state = this.get(name);
+    state.update(callback);
+  }
+
+  /**
+   * Unsubscribe
+   *
+   * Given a subscription ID returned from the `subscribe` method,
+   * this method removes and cleans up the corresponding subscription
+   */
+  public unsubscribe<K extends keyof T>(
+    name: K,
+    callback: Parameters<T[K]["subscribe"]>["0"]
+  ) {
+    const state = this.get(name);
+    state.update(callback);
+  }
+
+  /**
+   * Subscribe All
+   *
+   * Registers a callback on each registered `State` instance and
+   * is invoked each time your state changes. Using `Galena`'s
+   * `subscribeAll` method, although performant, can be less
+   * performant than subscribing directly to a target `State`
+   * instance using `Galena.subscribe()`. To clean up your
+   * subscription, call `Galena.unsubscribeAll()` with the ID
+   * returned
+   */
+  public subscribeAll(callback: (state: Galena<T>) => void) {
     const subscriptionID = this.IDs.get();
     const stateSubscriptions: [state: string, ID: string][] = [];
     for (const key in this.state) {
@@ -148,10 +181,10 @@ export class Galena<T extends Record<string, State<any>>> {
   /**
    * Unsubscribe
    *
-   * Given a subscription ID returned from the `subscribe` method,
+   * Given a subscription ID returned from the `subscribeAll()` method,
    * this method removes and cleans up the corresponding subscription
    */
-  public unsubscribe(ID: string) {
+  public unsubscribeAll(ID: string) {
     const IDs = this.subscriptions.get(ID);
     if (IDs) {
       for (const [state, ID] of IDs) {
