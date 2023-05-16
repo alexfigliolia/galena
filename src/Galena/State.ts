@@ -9,7 +9,7 @@ import type { MutationEvent } from "./types";
  * The root of all reactivity in Galena. State instances can
  * operate in isolation by calling `new State(...args)` or as
  * part of your application's larger global state by using
- * `Galena.createSlice()`.
+ * `Galena.composeState()`.
  *
  * `State` instances operate on the premise of pub-sub and mutability.
  * This provides significant performance improvement over more traditional
@@ -55,8 +55,8 @@ import type { MutationEvent } from "./types";
  *
  * #### Subscribing to State Changes
  * ```typescript
- * MyState.subscribe(state => {
- *   const listItems = state.get("listItems");
+ * MyState.subscribe(myState => {
+ *   const { listItems } = myState.state
  *   // Do something with your list items!
  * });
  * ```

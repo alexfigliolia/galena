@@ -7,16 +7,17 @@ import { State } from "Galena/State";
 /**
  * ## Galena
  *
- * Lightning fast global state with lazy slices.
+ * A performant global state solution that scales
  *
  * ### Creating State
+ *
  * ```typescript
  * // AppState.ts
  * import { Galena } from "galena";
  *
  * const AppState = new Galena([...middleware]);
  *
- * const NavigationState = AppState.createSlice("navigation", {
+ * const NavigationState = AppState.composeState("navigation", {
  *   currentRoute: "/",
  *   userID: "12345",
  *   permittedRoutes: ["/*"]
@@ -29,15 +30,15 @@ import { State } from "Galena/State";
  * import { AppState } from "./AppState";
  *
  * AppState.subscribe(appState => {
- *  const navState = appState.getSlice("navigation");
- *  const currentRoute = navState.get("currentRoute");
+ *  const navState = appState.get("navigation");
+ *  const { currentRoute } = navState.state;
  *  // do something with state changes!
  * });
  * ```
- * #### Using the Slice Instance
+ * #### Using the State Instance
  * ```typescript
  * NavigationState.subscribe(navigation => {
- *  const currentRoute = navigation.get("currentRoute");
+ *  const { currentRoute } = navigation.state
  *  // do something with state changes!
  * });
  * ```
@@ -63,15 +64,15 @@ export class Galena<T extends Record<string, State<any>>> {
   }
 
   /**
-   * Create Slice
+   * Compose State
    *
    * Creates a new `State` instance and returns it. Your new state
    * becomes immediately available on your `Galena` instance and
    * is wired into your middleware. All existing subscriptions to
-   * state will automatically receive updates when your new slice's
+   * state will automatically receive updates when your new unit of
    * state updates
    */
-  public createSlice<
+  public composeState<
     S extends any,
     M extends typeof State<S> = typeof State<S>
   >(
@@ -88,12 +89,12 @@ export class Galena<T extends Record<string, State<any>>> {
   }
 
   /**
-   * Get Slice
+   * Get
    *
-   * Returns a `State` instance by key
+   * Returns a unit of `State` by name
    */
-  public getSlice<K extends keyof T>(key: K): T[K] {
-    return this.state[key];
+  public get<K extends keyof T>(name: K): T[K] {
+    return this.state[name];
   }
 
   /**
@@ -103,6 +104,20 @@ export class Galena<T extends Record<string, State<any>>> {
    */
   private get mutable() {
     return this.state as Record<string, State>;
+  }
+
+  /**
+   * Update
+   *
+   * Runs a mutation on the specified unit of
+   * state
+   */
+  public update<K extends keyof T>(
+    name: K,
+    callback: Parameters<T[K]["update"]>["0"]
+  ) {
+    const state = this.get(name);
+    state.update(callback);
   }
 
   /**
@@ -141,6 +156,7 @@ export class Galena<T extends Record<string, State<any>>> {
     if (IDs) {
       for (const [state, ID] of IDs) {
         this.state[state].unsubscribe(ID);
+        this.subscriptions.delete(ID);
       }
     }
   }
@@ -148,25 +164,25 @@ export class Galena<T extends Record<string, State<any>>> {
   /**
    * ReIndex Subscriptions
    *
-   * When slices of state are created lazily, this method updates
+   * When units of state are created lazily, this method updates
    * each existing subscription to receive mutations occurring on
    * recently created `State` instances that post-date prior
    * subscriptions
    */
   private reIndexSubscriptions(name: string) {
-    for (const [ID, sliceSubscriptions] of this.subscriptions) {
-      for (const [state, subscriptionID] of sliceSubscriptions) {
+    for (const [ID, unitSubscriptions] of this.subscriptions) {
+      for (const [state, subscriptionID] of unitSubscriptions) {
         const callback = this.state[state]["emitter"]
           .get(state)
           ?.get(subscriptionID);
         if (callback) {
-          sliceSubscriptions.push([
+          unitSubscriptions.push([
             name,
             this.state[name].subscribe(() => {
               void callback(this.state);
             }),
           ]);
-          this.subscriptions.set(ID, sliceSubscriptions);
+          this.subscriptions.set(ID, unitSubscriptions);
           break;
         }
       }

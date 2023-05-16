@@ -37,12 +37,9 @@
   },
   "author": "Alex Figliolia",
   "license": "MIT",
-  "homepage": "https://github.com/alexfigliolia/event-emitter#readme",
+  "homepage": "https://github.com/alexfigliolia/galena#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/alexfigliolia/galena.git"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

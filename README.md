@@ -1,7 +1,7 @@
 # Galena
-Lightning fast platform agnostic state! Galena is a one-stop-shop for creating reactive state that supports your global application or singular isolated features. Galena operates on the premise of pub-sub and mutability allowing for significantly higher performance over more traditional state management utilities. 
+Lightning fast platform agnostic state! Galena is a one-stop-shop for creating reactive state that supports your global application or individually isolated features. Galena operates on the premise of pub-sub and mutability allowing for significantly higher performance over more traditional state management utilities. 
 
-In Galena, instances of State can be declared up-front or on-demand and will automatically register on your global application state. This creates a true single-source-of-true style of state without implicating performance or the complexity of maintenance!
+In Galena, your state architecture is a composition of reactive units that can be declared at any point in your application lifecycle. Your units of state can exist in isolation (similar to React Contexts) or as part of one or more global application states (similar to Redux). Galena offers a global application state solution that supports on-demand initialization, performant updates, and rich development API - without tons of boilerplate!
 
 ## Getting Started
 
@@ -12,7 +12,7 @@ npm install --save galena
 yarn add galena
 ```
 
-### Creating Global Application State
+### Creating Your Global Application State
 #### Instantiating Galena
 
 ```typescript
@@ -28,33 +28,68 @@ if(process.env.NODE_ENV === "development") {
 export const AppState = new Galena(middleware);
 ```
 
-### Creating a Slice of State
+### Creating a Unit of State
 ```typescript
 // NavigationState.ts
 import { AppState } from "./AppState.ts";
 
-export const NavigationState = AppState.createSlice("navigation", {
+export const NavigationState = AppState.composeState("navigation", {
+  // initial state
   currentRoute: "/",
   userID: "123",
   permittedRoutes: ["**/*"]
 });
 ```
 
-Creating state slices using `AppState.createSlice()` will automatically scope your new slice of state to your `Galena` instance. You may then access, subscribe, and update your state using `AppState.getSlice("navigation")` or by accessing the `NavigationState` object directly. 
+Creating state units using `AppState.composeState()` will automatically scope your new unit of state to your `Galena` instance. You may then access, subscribe, and update your state using `AppState.get("navigation")` or by referencing the returned `State` object. 
 
-You may also create slices of state that are *not* connected to you "global" `Galena` instance. To promote flexibility for developers to organize their state however they wish, developers can import the `State` object directly from `galena` and invoke it by calling `const MyState = new State("myState", /* initial state */)`; This technique can be convenient for extracting smaller amounts of state from an isolated feature that doesn't need to live along side the rest of your application state.
+```typescript
+// BusinessLogic.ts 
+import { AppState } from "./AppState.ts";
+
+AppState.subscribe(appState => {
+  const navigationState = appState.get("navigation");
+  // React to changes to app state!
+});
+
+// Set State!
+AppState.update("navigation", state => {
+  state.currentRoute = "/contact-us";
+});
+```
+
+You may also create units of state that are *not* connected to your "global" `Galena` instance. To promote flexibility for developers to organize their state however they wish, `Galena`'s `State` interface is available to be imported directly. Spawning units of `State` without a `Galena` instance creates an isolate unit of state - unknown to your `Galena` instance. This technique can be convenient for applying `Galena`'s `State` API's to an isolated feature.
+
+```typescript
+import { State } from "galena";
+
+// Create Your Isolated State instance
+const FeatureState = new State("myFeature", {
+  // initial state
+  list: [1, 2, 3];
+});
+
+FeatureState.subscribe((state) => {
+  // React to FeatureState changes!
+});
+
+FeatureState.update((state) => {
+  // Update feature state!
+  state.list.push(state.list.length);
+});
+```
 
 ## Mutation and Subscriptions
 
 ### Mutating State Values
-You can access and update your state values using your `Galena` instance or using your individual `State` slices
+You can update your state using `Galena` or `State` instances
 
 #### Mutating State Using Your Galena Instance
 ```typescript
 // business-logic.ts
 import { AppState } from "./AppState.ts";
 
-AppState.getSlice("navigation").update((state, initialState) => {
+AppState.update("navigation", (state, initialState) => {
   state.currentRoute = "/user-profile";
 });
 ```
@@ -69,7 +104,7 @@ NavigationState.update((state, initialState) => {
 });
 ```
 
-Mutating state using your individual slices of state will also update your `Galena` instance!
+Running mutations using individual units of state will also update your `Galena` instance!
 
 ### Subscribing to State Changes
 
@@ -79,16 +114,16 @@ Mutating state using your individual slices of state will also update your `Gale
 import { AppState } from "./AppState.ts";
 
 const subscriptionID = AppState.subscribe(state => {
-  const navState = state.getSlice("navigation");
+  const navState = state.get("navigation");
   // React to changes to "navigation" state (or any other registered
-  // slices of state)
+  // unit of state)
 });
 
 // When the subscription is no longer needed
 AppState.unsubscribe(subscriptionID);
 ```
 
-#### Using Your State Slices Directly
+#### Using Your State Units Directly
 ```typescript
 // business-logic.ts
 import { NavigationState } from "./NavigationState.ts";
@@ -102,122 +137,206 @@ const subscriptionID = NavigationState.subscribe(state => {
 NavigationState.unsubscribe(subscriptionID);
 ```
 
-### Let's Talk Architecture
-The `Galena` library is designed to promote extension of its features. In doing so, it's possible to achieve a very strong Model + Controller layer for your applications. I'm going to demonstrate a few techniques for not only utilizing `Galena`, but building proprietary Models and Controllers for your applications.
+### API Reference
 
-#### Extending State
-`State`'s are designed to be an out-of-the-box solution for housing any portion of your applications global state. There are benefits however, to extending is functionality to compose proprietary states for your features:
+#### Galena
+Instances of `Galena` behave as a container for `State` instances. Your `Galena` instance can contain any number of `State`'s and is designed to replicate the "global" application state pattern, without the performance hit incurred when making complex mutations to large state objects.
+
+Because your "global" application state using `Galena` is simply the composition of multiple `State` instances, your state exists in micronized operable sub-structures that can be individually subscribed to and mutated. This means, mutating one piece of your `State` does not effect other pieces of your `State`. All changes are isolated and safe from side-effects.
 
 ```typescript
-// AppState.ts
-import { Galena, State } from "galena";
+import { Galena, Logger, Profiler } from "galena";
+import type { State } from "galena";
 
-// First Create an Instance of Galena
-export const AppState = new Galena();
+const AppState = new Galena(/* middleware */ [new Logger(), new Profiler()]);
 
-// Next Create an extension of State. In this case we'll create one for the current user of our application
-export class UserModel extends State<{
-  userID: string;
-  username: string;
-  connectedUsers: string[];
-}> {
-  public addConnection = this.mutation((userID: string) => {
-   this.state.connectedUsers.push(userID);
-  });
+/**
+ * Compose State 
+ * 
+ * Creates unit of `State` connected to your `Galena` instance.
+ * Returns the unit of `State`
+*/
+AppState.composeState("nameOfState", /* initial state */);
 
-  public updateUsername = this.mutation((username: string) => {
-  this.state.username = username;
-  });
-}
+/**
+ * Get 
+ * 
+ * Returns a connected unit of `State` by name
+*/
+AppState.get("nameOfState");
 
-// Let's add the `UserModel` state to our AppState!
-export const CurrentUser = AppState.createSlice("currentUser", { 
-  userID: 1, 
-  username: "currentUser", 
-  connectedUsers: ["2", "3", "4", "5"]
-}, UserModel);
+/**
+ * Update
+ * 
+ * Mutates a unit of state by name
+*/
+AppState.update("nameOfState", (state) => {});
+
+/**
+ * Subscribe
+ * 
+ * Invokes the provided callback each time a unit of 
+ * `AppState` changes. Returns a subscription ID
+*/
+const subscription = AppState.subscribe(appState => {});
+
+/**
+ * Unsubscribe
+ * 
+ * Closes an open subscription given a subscription ID
+ * returned by `new Galena().subscribe`
+*/
+AppState.unsubscribe(subscription);
+
+/**
+ * Unsubscribe
+ * 
+ * Closes an open subscription given a subscription ID
+ * returned by `new Galena().subscribe`
+*/
+AppState.unsubscribe(subscription);
 ```
 
-Now that we have our current user in our Galena State, we can create subscriptions and updates!
+#### State
 
-```tsx
-import { AppState } from "./AppState";
+```typescript
+import { State, Logger, Profiler } from "galena";
 
-const subscriptionID = AppState.getSlice("currentUser").subscribe(state => {
-  // React to changes to the current user!
+const MyState = new State("myState", /* initial state */);
+
+/**
+ * Get State
+ * 
+ * Returns the current state
+*/
+MyState.getState();
+
+/**
+ * Update
+ * 
+ * Invokes the specified callback with the current and initial
+ * state. This method will allow you to mutate the current state
+ * and trigger updates to all open subscriptions on the `State`
+ * instance
+*/
+MyState.update((currentState, initialState) => {
+  currentState.someValue = "new value!"
 });
 
-// Mutate the current user
-AppState.getSlice("currentUser").updateUsername("awesomeUser");
+/**
+ * Reset
+ * 
+ * Resets the current state back to its default state
+*/
+MyState.reset();
 
-AppState.getSlice("currentUser").addConnection("6");
+/**
+ * Mutation
+ * 
+ * A composition method for generating mutation functions for 
+ * your state. Returns a function that when called, will trigger
+ * all open subscriptions to your state
+*/
+const myStateMutator = MyState.mutation((someValue: string) => {
+  // Mutate state using arbitrary input arguments
+  MyState.state.data.push(someValue);
+
+  // myStateMutator(10);
+});
+
+/**
+ * Register Middleware
+ * 
+ * Applies any number of Middleware instances to your State
+*/
+MyState.registerMiddleware(/* Middleware */ new Logger(), new Profiler());
+
+/**
+ * Subscribe
+ * 
+ * Given a callback, invokes the callback each time `MyState`
+ * changes. Returns a subscription ID
+*/
+const subscription = MyState.subscribe(state => {});
+
+/**
+ * Unsubscribe
+ * 
+ * Closes an open subscription given a subscription ID
+ * returned by `new State().subscribe`
+*/
+MyState.unsubscribe(subscription);
 ```
-Using this extension pattern, each `State` instance can exist as it's own data model with an abstraction layer for proprietary mutations and business logic. Although slightly more complex on the surface, this pattern in very large applications will reduce the complexity of state management significantly. It'll also replicate what one might find at the persistent layer of an application - where persisted data structures are often modeled along side their mutation logic when interacting with a database or GQL Resolver. Because of this, the extension pattern may be beneficial for teams that lean fullstack instead of frontend/backend!
 
-#### Using Middleware
-Now that we've gone over extending `State` to create Models for your application's schemas, let's talk about creating developer tools and enhancements for your application!
+### Using Middleware
+Galena supports developers using and creating enhancements for their usage of Galena. Out of the box `Galena` comes with two middleware objects that can be used for making development more convenient. 
 
-Similar to a lot of stateful tools, `Galena` supports the Middleware architecture. With it, you can do a lot of cool things like adding logging, performance profiling, and error handling. Let's look at how to use middleware in `Galena`, then we'll walk through creating our own!
+#### Logger
+A state transition logger, that logs to the console each time state updates. The Logger will log the previous state, the current state, and tell you which `State` instance changed.
 
-When applying middleware in `Galena`, you may choose to apply your middleware to *all* of your application state or just some of it! To apply middleware to each of your slices of `State`, you can simply initialize `Galena` with the middleware that you enjoy using:
+#### Profiler
+A warning for slow state transitions exceeding a certain number of milliseconds. By default the Profiler will log each time a state transition exceeds one full frame (16ms). This threshold can be adjusted by calling `new Logger(/* any number of milliseconds */)`
+
+Similar to a lot of stateful tools, `Galena` also exposes an API for creating your own Middleware. With it, you can do a lot of cool things for both development and productions environments. Let's first look at how to use middleware in `Galena`, then we'll walk through creating our own!
+
+#### Applying Middleware
+When applying middleware in `Galena`, you may choose to apply your middleware to *all* of your application state or just some of it! To apply middleware to each of your units of `State`, you can simply initialize `Galena` with the middleware that you enjoy using:
 ```typescript
 import { Galena, Profiler, Logger } from "galena";
 
 export const AppState = new Galena([new Profiler(), new Logger()]);
 ```
-Using this method, whenever you create a new slice of state using `AppState.createSlice()`, your `Profiler` and `Logger` will automatically register themselves on your new `State` instance.
+Using this method, whenever you create a new unit of state using `AppState.composeState()`, your `Profiler` and `Logger` will automatically register themselves on your new `State` instance.
 
 You may also choose to register a middleware on only some of your state!
 
 ```typescript
 import { Galena, Profiler, Logger } from "galena";
 
-// Let's add logging to all of our State Slices
+// Let's add logging to all of our State Units
 export const AppState = new Galena([new Logger()]);
 
-export const FrequentlyUpdatedState = AppState.createSlice("complexState", { 
+export const FrequentlyUpdatedState = AppState.composeState("complexState", { 
   bigData: new Array(10000).fill("")
 });
 
-// Let's apply profiling to just one complex slice of state
+// Let's apply profiling to just one complex unit of state
 FrequentlyUpdatedState.registerMiddleware(new Profiler());
 ```
-Next, let's create our own middleware for our `UserModel` from the previous examples. 
 
 #### Creating Middleware for a Real Use Case
-Let's say the current application does not use typescript and we want to ensure that only strings are allowed to be added to the `connectedUsers` array:
+Let's say the current application does not use typescript and we want to ensure that only strings are allowed to be added to an array in our state:
 
 ```typescript
 import { Middleware } from "galena";
 
 // Let's extend the Middleware class from the Galena library
-export class UserModelMiddleware extends Middleware {
-  // A cache for the length of the current users connections
-  private totalConnectedUsers: number | null = null;
+export class UserConnectionMiddleware extends Middleware {
+  // A cache for the length of the array we want to audit
+  private totalArrayElements: number | null = null;
 
-  // On each update to the UserModel, let's cache the total number
-  // of user connections
-  override onBeforeUpdate(state: State) {
-  this.totalConnectedUsers = state.get("connectedUsers").length;
+  // On each update to the, let's cache the length of the array
+  override onBeforeUpdate({ state }: State) {
+    this.totalArrayElements = state.connectedUsers.length;
   }
 
   // When an update occurs let's see if the length of the
   // connectedUsers array has changed
-  override onUpdate(state: State) {
-  const connectedUsers = state.get("connectedUsers");
-  if(
-  this.totalConnectedUsers === null ||
-  connectedUsers.length === this.totalConnectedUsers
-  ) {
-  return;
-  }
-  // If the length of user connections has changed, let's validate that
-  // the new connection is in fact a string.
-  const newConnection = connectedUsers[connectedUsers.length - 1];
-  if(typeof newConnection !== "string") {
-  // If we find anything other than a string, let's log or throw an error
-  console.error(`A ${typeof newConnection} was added to the current user's connection array! This can create a bug in production!`)
-  }
+  override onUpdate({ state }: State) {
+    const connectedUsers = state.connectedUsers
+    if(
+      this.totalArrayElements === null ||
+      connectedUsers.length === this.totalArrayElements
+    ) {
+      return;
+    }
+    // If the length of user connections has changed, let's validate that
+    // the new connection is in fact a string.
+    const newConnection = connectedUsers[connectedUsers.length - 1];
+    if(typeof newConnection !== "string") {
+      // If we find anything other than a string, let's log or throw an error
+      console.error(`A ${typeof newConnection} was added to the current user's connection array! This can create a bug in production!`)
+    }
   }
 }
 ```
@@ -226,8 +345,7 @@ Next let's bring this middleware into our application!
 ```typescript
 import { Galena, State, Profiler, Logger } from "galena";
 import type { Middleware } from "galena";
-import { UserModel } from "./UserModel";
-import { UserModelMiddleware } from "./UserModelMiddleware";
+import { UserConnectionMiddleware } from "./UserConnectionMiddleware";
 
 const IS_NOT_PRODUCTION = process.env.NODE_ENV !== "production";
 
@@ -240,27 +358,88 @@ if(IS_NOT_PRODUCTION) {
 export const AppState = new Galena(middleware);
 
 // Let's add the `UserModel` state to our AppState!
-export const CurrentUser = AppState.createSlice("currentUser", { 
+export const CurrentUserState = AppState.composeState("currentUser", { 
   userID: 1, 
   username: "currentUser", 
   connectedUsers: ["2", "3", "4", "5"]
-}, UserModel);
+});
 
 if(IS_NOT_PRODUCTION) {
   // Let's prevent developers from adding non-string values
   // to the `connectedUsers` array!
-  CurrentUser.registerMiddleware(new UserModelMiddleware());
+  CurrentUserState.registerMiddleware(new UserConnectionMiddleware());
 }
 ```
 
-### Let's talk Performance!
-Galena can out-perform just about every state management library out there. This is primarily because of its mutable nature. In Galena, you'll never have to create new objects or immutable instances to ensure that your state mutations are delivered to consumers. All state transitions can safely occur in O(1) space and allow for significantly faster updates on large data structures.
+### Let's Talk Architecture
+The `Galena` library is designed to promote extension of its features. In doing so, it's possible to achieve a very strong Model + Controller layer for your applications. I'm going to demonstrate a few techniques for not only utilizing `Galena` as is, but building proprietary Models and Controllers for your applications.
 
-Because in Galena, we divide state into independent models called "Slices", you are free to make frequent and complex updates to any Slice of State while the rest of your application state remains completely idle to its consumers and subscriptions. There is no internal state reconciliations occurring at a joint level when you mutate a single Slice of your application state.
+#### Extending State
+Galena's `State` interface is designed to be an out-of-the-box solution for housing any portion of your application's state. There are benefits however, to extending is functionality to compose proprietary models for your features:
+
+##### Creating Models
+```typescript
+// UserModel.ts
+import { State } from "galena";
+
+// Let's extend the `State` class for an explicit schema
+// and add some methods for mutating our schema
+export class UserModel extends State<{
+  userID: string;
+  username: string;
+  connectedUsers: string[];
+}> {
+  public addConnection = this.mutation((userID: string) => {
+    this.state.connectedUsers.push(userID);
+  });
+
+  public updateUsername = this.mutation((username: string) => {
+    this.state.username = username;
+  });
+}
+```
+
+Next, let's use our Model!
+
+```typescript
+// AppState.ts
+import { Galena, State } from "galena";
+import { UserModel } from "./UserModel";
+
+export const AppState = new Galena(/* middleware */);
+
+// Let's apply our UserModel to AppState
+export const UserState = AppState.composeState("currentUser", { 
+  userID: 1, 
+  username: "currentUser", 
+  connectedUsers: ["2", "3", "4", "5"]
+}, UserModel); // Specify the UserModel here so that our new unit is created using the `UserModel` instead of `State`
+```
+
+Now that we have our current user in our Galena State, we can create subscriptions and updates!
+
+```tsx
+import { AppState } from "./AppState";
+
+const subscriptionID = AppState.get("currentUser").subscribe(state => {
+  // React to changes to the current user!
+});
+
+// Invoke proprietary mutations for the UserModel
+AppState.get("currentUser").updateUsername("awesomeUser");
+
+AppState.get("currentUser").addConnection("6");
+```
+Using this extension pattern, each unit of `State` can exist as it's own data model with abstractions for proprietary mutations and business logic. Although slightly more complex on the surface, this pattern in very large applications will reduce the complexity of state management significantly. It'll also replicate what one might find at the persistence layer of server-side code - where persisted data structures are often modeled along side their mutation logic when interacting with a database or GQL Resolver. Because of this, the extension pattern may be beneficial for teams that lean fullstack instead of frontend/backend!
+
+### Let's talk Performance!
+Galena's allowance for in-place state mutations allows it to be extremely fast at scale. In Galena, you'll never have to create new or immutable objects to ensure that your state mutations are delivered to consumers. All state transitions can safely occur in O(1) space and allow for significantly faster updates on large data structures.
+
+In addition to in-place mutations, Galena's composition architecture allows for safely making *extremely* frequent updates to your state. Because all mutations are isolated to a single unit of State at a given time, the rest of your application state remains completely idle - even when making complex mutations to a given unit.
  
-In `Galena`, subscriptions are optimized for performance as well. In more typical state management libraries, any changes to state will trigger a call to all open subscriptions. Not in `Galena`! When state changes, the only subscriptions that will re-compute are the ones that are directly tied to the Slice of state that changed. All other subscriptions will remain dormant!
+In `Galena`, state-subscriptions are optimized for performance as well. In more typical state management libraries, any changes to state will trigger a call to all open subscriptions on a given data store. This is not the case in `Galena`! When state changes, the only subscriptions that will re-compute are the ones that are directly tied to the unit of state that changed. All other subscriptions will remain dormant!
 
 ### Let's talk support for Frontend Frameworks!
-`Galena` provides bindings for React through the `react-galena` package. This package provides factories for generating `connect` HOC's and `useState/useMutation` hooks from your state instances.
+`Galena` provides bindings for React through [react-galena](https://github.com/alexfigliolia/react-galena). This package provides factories for generating HOC's and hooks from your state instances.
 
 
