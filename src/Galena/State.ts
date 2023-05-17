@@ -119,26 +119,12 @@ export class State<T extends any = any> {
   /**
    * Mutation
    *
-   * A utility method for use when extending the `State` class.
-   * Extending the `State` class is highly encouraged. If you
-   * wish to extend the `State` class and provide it with your
-   * own methods for updating state. Simply wrap those methods
-   * with `State.mutation`:
-   * typescript
-   * ```
-   * class ExtensionOfState<T> extends State<T> {
-   *    public updateListItems = this.mutation((listItems: string[]) => {
-   *       this.state.listItems = listItems;
-   *    });
-   * }
-   * ```
-   *
-   * This `State.mutation` wrapper ensures that
+   * The `State.mutation` wrapper ensures that
    * 1. Subscriptions are notified of your state changes
    * 2. Any registered middleware (such as loggers or profiling tools)
    * execute properly for during your state update
    */
-  public mutation<F extends (...args: any[]) => any>(func: F) {
+  private mutation<F extends (...args: any[]) => any>(func: F) {
     return (...args: Parameters<F>): void => {
       this.lifeCycleEvent(MiddlewareEvents.onBeforeUpdate);
       const returnValue = func(...args);

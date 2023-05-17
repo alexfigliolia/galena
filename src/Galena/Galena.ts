@@ -59,7 +59,7 @@ export class Galena<T extends Record<string, State<any>>> {
     string,
     [state: string, ID: string][]
   >();
-  constructor(middleware: Middleware[]) {
+  constructor(middleware: Middleware[] = []) {
     this.middleware = middleware;
   }
 
@@ -85,7 +85,7 @@ export class Galena<T extends Record<string, State<any>>> {
     state.registerMiddleware(...this.middleware);
     this.mutable[name] = state;
     this.reIndexSubscriptions(name);
-    return state as unknown as InstanceType<M>;
+    return state as InstanceType<M>;
   }
 
   /**
@@ -116,8 +116,7 @@ export class Galena<T extends Record<string, State<any>>> {
     name: K,
     callback: Parameters<T[K]["update"]>["0"]
   ) {
-    const state = this.get(name);
-    state.update(callback);
+    return this.get(name).update(callback);
   }
 
   /**
@@ -134,8 +133,7 @@ export class Galena<T extends Record<string, State<any>>> {
     name: K,
     callback: Parameters<T[K]["subscribe"]>["0"]
   ) {
-    const state = this.get(name);
-    state.update(callback);
+    return this.get(name).update(callback);
   }
 
   /**
@@ -148,8 +146,7 @@ export class Galena<T extends Record<string, State<any>>> {
     name: K,
     callback: Parameters<T[K]["subscribe"]>["0"]
   ) {
-    const state = this.get(name);
-    state.update(callback);
+    return this.get(name).update(callback);
   }
 
   /**

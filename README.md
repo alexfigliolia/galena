@@ -255,20 +255,6 @@ MyState.update((currentState, initialState) => {
 MyState.reset();
 
 /**
- * Mutation
- * 
- * A composition method for generating mutation functions for 
- * your state. Returns a function that when called, will trigger
- * all open subscriptions and middleware registered to your state
-*/
-const myStateMutator = MyState.mutation((someValue: string) => {
-  // Mutate state using arbitrary input arguments
-  MyState.state.data.push(someValue);
-
-  // myStateMutator(10);
-});
-
-/**
  * Register Middleware
  * 
  * Applies any number of Middleware instances to your State
