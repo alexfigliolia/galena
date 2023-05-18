@@ -124,17 +124,18 @@ export class State<T extends any = any> {
    * 2. Any registered middleware (such as loggers or profiling tools)
    * execute properly for during your state update
    */
-  private mutation<F extends (...args: any[]) => any>(func: F) {
-    return (...args: Parameters<F>): void => {
+  public mutation<F extends (...args: any[]) => any>(func: F) {
+    return (...args: Parameters<F>) => {
       this.lifeCycleEvent(MiddlewareEvents.onBeforeUpdate);
       const returnValue = func(...args);
       if (returnValue instanceof Promise) {
-        void returnValue.then(() => {
+        return returnValue.then((v) => {
           this.scheduleUpdate();
+          return v;
         });
-      } else {
-        this.scheduleUpdate();
       }
+      this.scheduleUpdate();
+      return returnValue;
     };
   }
 

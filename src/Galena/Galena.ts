@@ -51,7 +51,9 @@ import { State } from "Galena/State";
  * });
  * ```
  */
-export class Galena<T extends Record<string, State<any>>> {
+export class Galena<
+  T extends Record<string, State<any>> = Record<string, State<any>>
+> {
   public readonly state = {} as T;
   private readonly middleware: Middleware[] = [];
   private readonly IDs = new AutoIncrementingID();
