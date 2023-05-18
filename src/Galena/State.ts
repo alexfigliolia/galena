@@ -1,7 +1,8 @@
 import { MiddlewareEvents } from "Middleware/types";
 import type { Middleware } from "Middleware/Middleware";
 import { EventEmitter } from "@figliolia/event-emitter";
-import type { MutationEvent } from "./types";
+import { Priority, type MutationEvent } from "./types";
+import { Scheduler } from "./Scheduler";
 
 /**
  * ### State
@@ -61,13 +62,14 @@ import type { MutationEvent } from "./types";
  * });
  * ```
  */
-export class State<T extends any = any> {
+export class State<T extends any = any> extends Scheduler {
   public state: T;
   public readonly name: string;
   public readonly initialState: T;
   private readonly middleware: Middleware[] = [];
   private readonly emitter = new EventEmitter<MutationEvent<T>>();
   constructor(name: string, initialState: T) {
+    super();
     this.name = name;
     this.state = initialState;
     this.initialState = State.clone(initialState);
@@ -85,7 +87,10 @@ export class State<T extends any = any> {
   /**
    * Update
    *
-   * Mutates state and notifies any open subscriptions
+   * Mutates state and notifies any open subscriptions. This method
+   * by default uses task batching for optimized performance. If you
+   * need to bypass batching for higher-priority state updates, you can
+   * use `State.priorityUpdate()` or `State.backgroundUpdate()`
    *
    * ##### Synchronous updates
    * ```typescript
@@ -104,7 +109,70 @@ export class State<T extends any = any> {
   public update = this.mutation(
     (func: (state: T, initialState: T) => void | Promise<void>) => {
       return func(this.state, this.initialState);
-    }
+    },
+    Priority.BACKGROUND
+  );
+
+  /**
+   * Background Update
+   *
+   * Mutates state and notifies any open subscriptions. This method
+   * bypasses Galena's internal task batching for a more immediate
+   * state update and propagation to state consumers. Overusing this
+   * method can create some performance bottle-necks if running several
+   * state updates on every frame. It is recommended to use `State.update()`
+   * wherever possible.
+   *
+   * ##### Synchronous updates
+   * ```typescript
+   * MyState.backgroundUpdate((state, initialState) => {
+   *   state.listItems.push(5);
+   * });
+   * ```
+   * ##### Asynchronous updates
+   * ```typescript
+   * MyState.backgroundUpdate(async (state, initialState) => {
+   *   const listItems = await fetch("/list-items");
+   *   state.listItems = listItems;
+   * });
+   * ```
+   */
+  public backgroundUpdate = this.mutation(
+    (func: (state: T, initialState: T) => void | Promise<void>) => {
+      return func(this.state, this.initialState);
+    },
+    Priority.BACKGROUND
+  );
+
+  /**
+   * Priority Update
+   *
+   * Mutates state and notifies any open subscriptions. This method
+   * bypasses optimizations for task batching and scheduling. This means
+   * that your state update and subscriptions are executed as immediately
+   * as possible. Overusing this method can create some performance bottle-
+   * necks if running updates every frame. It is recommended to use
+   * `State.update()` and `State.backgroundUpdate()` wherever possible.
+   *
+   * ##### Synchronous updates
+   * ```typescript
+   * MyState.priorityUpdate((state, initialState) => {
+   *   state.listItems.push(5);
+   * });
+   * ```
+   * ##### Asynchronous updates
+   * ```typescript
+   * MyState.priorityUpdate(async (state, initialState) => {
+   *   const listItems = await fetch("/list-items");
+   *   state.listItems = listItems;
+   * });
+   * ```
+   */
+  public priorityUpdate = this.mutation(
+    (func: (state: T, initialState: T) => void | Promise<void>) => {
+      return func(this.state, this.initialState);
+    },
+    Priority.IMMEDIATE
   );
 
   /**
@@ -124,17 +192,20 @@ export class State<T extends any = any> {
    * 2. Any registered middleware (such as loggers or profiling tools)
    * execute properly for during your state update
    */
-  public mutation<F extends (...args: any[]) => any>(func: F) {
+  public mutation<F extends (...args: any[]) => any>(
+    func: F,
+    priority: Priority = Priority.BACKGROUND
+  ) {
     return (...args: Parameters<F>) => {
       this.lifeCycleEvent(MiddlewareEvents.onBeforeUpdate);
       const returnValue = func(...args);
       if (returnValue instanceof Promise) {
         return returnValue.then((v) => {
-          this.scheduleUpdate();
+          this.scheduleUpdate(priority);
           return v;
         });
       }
-      this.scheduleUpdate();
+      this.scheduleUpdate(priority);
       return returnValue;
     };
   }
@@ -145,9 +216,9 @@ export class State<T extends any = any> {
    * Schedules an update to State subscribers and emits the
    * `onUpdate` lifecycle hook
    */
-  private scheduleUpdate() {
+  private scheduleUpdate(priority: Priority) {
     this.lifeCycleEvent(MiddlewareEvents.onUpdate);
-    void Promise.resolve(this.emitter.emit(this.name, this));
+    void this.scheduleTask(() => this.emitter.emit(this.name, this), priority);
   }
 
   /**
