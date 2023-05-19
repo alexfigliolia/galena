@@ -135,7 +135,7 @@ export class Galena<
     name: K,
     callback: Parameters<T[K]["subscribe"]>["0"]
   ) {
-    return this.get(name).update(callback);
+    return this.get(name).subscribe(callback);
   }
 
   /**
@@ -144,11 +144,8 @@ export class Galena<
    * Given a subscription ID returned from the `subscribe` method,
    * this method removes and cleans up the corresponding subscription
    */
-  public unsubscribe<K extends keyof T>(
-    name: K,
-    callback: Parameters<T[K]["subscribe"]>["0"]
-  ) {
-    return this.get(name).update(callback);
+  public unsubscribe<K extends keyof T>(name: K, ID: string) {
+    return this.get(name).unsubscribe(ID);
   }
 
   /**

@@ -88,9 +88,10 @@ export class State<T extends any = any> extends Scheduler {
    * Update
    *
    * Mutates state and notifies any open subscriptions. This method
-   * by default uses task batching for optimized performance. If you
-   * need to bypass batching for higher-priority state updates, you can
-   * use `State.priorityUpdate()` or `State.backgroundUpdate()`
+   * by default uses task batching for optimized performance. In almost
+   * every use-case, this method is the correct way to mutate state. If
+   * you need to bypass batching for higher-priority state updates, you
+   * can use `State.priorityUpdate()` or `State.backgroundUpdate()`
    *
    * ##### Synchronous updates
    * ```typescript
@@ -118,10 +119,9 @@ export class State<T extends any = any> extends Scheduler {
    *
    * Mutates state and notifies any open subscriptions. This method
    * bypasses Galena's internal task batching for a more immediate
-   * state update and propagation to state consumers. Overusing this
-   * method can create some performance bottle-necks if running several
-   * state updates on every frame. It is recommended to use `State.update()`
-   * wherever possible.
+   * state update and propagation of state to consumers. It utilizes
+   * a micro-task that allows for the current call stack to clear
+   * ahead of propagating state updates to consumers
    *
    * ##### Synchronous updates
    * ```typescript
@@ -149,10 +149,11 @@ export class State<T extends any = any> extends Scheduler {
    *
    * Mutates state and notifies any open subscriptions. This method
    * bypasses optimizations for task batching and scheduling. This means
-   * that your state update and subscriptions are executed as immediately
-   * as possible. Overusing this method can create some performance bottle-
-   * necks if running updates every frame. It is recommended to use
-   * `State.update()` and `State.backgroundUpdate()` wherever possible.
+   * that state updates made with this method propagate to subscriptions
+   * as immediately as possible. Overusing this method can cause your
+   * state updates to perform slower in certain cases. The usage of this
+   * method should be conserved for state mutations that need to occur
+   * at a certain frame rate
    *
    * ##### Synchronous updates
    * ```typescript
@@ -187,12 +188,33 @@ export class State<T extends any = any> extends Scheduler {
   /**
    * Mutation
    *
-   * The `State.mutation` wrapper ensures that
-   * 1. Subscriptions are notified of your state changes
-   * 2. Any registered middleware (such as loggers or profiling tools)
-   * execute properly for during your state update
+   * This method can be used to wrap arbitrary functions that when invoked
+   * will:
+   * 1. Notify your subscriptions with the latest state
+   * 2. Execute any registered middleware (such as loggers or profiling tools)
+   *
+   * Using this method, developers can compose and extend `Galena`'s internal
+   * infrastructure for state mutations to create proprietary models for your
+   * state
+   *
+   * ```typescript
+   * import { State } from "galena";
+   *
+   * // Extend of Galena State
+   * class MyState extends State {
+   *   addListItem = mutation((newListItem) => {
+   *     this.state.list.push(newListItem);
+   *   });
+   * }
+   *
+   * // Create an instance
+   * const myState = new MyState("myState", { list: [] });
+   *
+   * // Invoke your custom mutation method
+   * myState.addListItem("new-item");
+   * ```
    */
-  public mutation<F extends (...args: any[]) => any>(
+  protected mutation<F extends (...args: any[]) => any>(
     func: F,
     priority: Priority = Priority.BACKGROUND
   ) {
