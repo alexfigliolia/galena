@@ -111,14 +111,39 @@ export class Galena<
   /**
    * Update
    *
-   * Runs a mutation on the specified unit of
-   * state
+   * Runs a mutation on the specified unit of state
    */
   public update<K extends keyof T>(
     name: K,
-    callback: Parameters<T[K]["update"]>["0"]
+    mutation: Parameters<T[K]["update"]>["0"]
   ) {
-    return this.get(name).update(callback);
+    return this.get(name).update(mutation);
+  }
+
+  /**
+   * Background Update
+   *
+   * Runs a higher priority mutation on the specified unit of
+   * state
+   */
+  public backgroundUpdate<K extends keyof T>(
+    name: K,
+    mutation: Parameters<T[K]["backgroundUpdate"]>["0"]
+  ) {
+    return this.get(name).backgroundUpdate(mutation);
+  }
+
+  /**
+   * Priority Update
+   *
+   * Runs an immediate priority mutation on the specified unit
+   * of state
+   */
+  public priorityUpdate<K extends keyof T>(
+    name: K,
+    mutation: Parameters<T[K]["priorityUpdate"]>["0"]
+  ) {
+    return this.get(name).priorityUpdate(mutation);
   }
 
   /**
@@ -133,9 +158,9 @@ export class Galena<
    */
   public subscribe<K extends keyof T>(
     name: K,
-    callback: Parameters<T[K]["subscribe"]>["0"]
+    mutation: Parameters<T[K]["subscribe"]>["0"]
   ) {
-    return this.get(name).subscribe(callback);
+    return this.get(name).subscribe(mutation);
   }
 
   /**

@@ -13,7 +13,7 @@ import { Priority } from "./types";
  * changes to consumers
  * 2. Microtask - Immediate task execution and scheduled propagation of
  * changes to consumers
- * 3. Background - Immediate task execution and batched propagation of
+ * 3. Batched - Immediate task execution and batched propagation of
  * changes to consumers
  *
  * This module manages the propagation of changes to State consumers
@@ -22,6 +22,9 @@ import { Priority } from "./types";
 export class Scheduler<T extends Task = Task> {
   private task: null | T = null;
   private schedule: ReturnType<typeof setTimeout> | null = null;
+  constructor() {
+    this.executeTasks = this.executeTasks.bind(this);
+  }
 
   /**
    * Schedule Task
@@ -31,22 +34,19 @@ export class Scheduler<T extends Task = Task> {
    * level specified
    */
   protected scheduleTask(task: T, priority: Priority) {
+    this.task = task;
     switch (priority) {
       case Priority.IMMEDIATE:
-        this.task = task;
         return this.executeTasks();
       case Priority.MICROTASK:
         return Promise.resolve().then(() => {
-          this.task = task;
           return this.executeTasks();
         });
-      case Priority.BACKGROUND:
+      case Priority.BATCHED:
       default:
-        if (this.task && this.schedule) {
-          return;
+        if (!this.schedule) {
+          this.createSchedule();
         }
-        this.task = task;
-        this.createSchedule();
     }
   }
 
@@ -57,9 +57,7 @@ export class Scheduler<T extends Task = Task> {
    */
   private createSchedule() {
     this.clearSchedule();
-    this.schedule = setTimeout(() => {
-      this.executeTasks();
-    }, 5);
+    this.schedule = setTimeout(this.executeTasks, 5);
   }
 
   /**

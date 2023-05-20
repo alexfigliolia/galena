@@ -111,7 +111,7 @@ export class State<T extends any = any> extends Scheduler {
     (func: (state: T, initialState: T) => void | Promise<void>) => {
       return func(this.state, this.initialState);
     },
-    Priority.BACKGROUND
+    Priority.BATCHED
   );
 
   /**
@@ -141,7 +141,7 @@ export class State<T extends any = any> extends Scheduler {
     (func: (state: T, initialState: T) => void | Promise<void>) => {
       return func(this.state, this.initialState);
     },
-    Priority.BACKGROUND
+    Priority.MICROTASK
   );
 
   /**
@@ -216,7 +216,7 @@ export class State<T extends any = any> extends Scheduler {
    */
   protected mutation<F extends (...args: any[]) => any>(
     func: F,
-    priority: Priority = Priority.BACKGROUND
+    priority: Priority = Priority.BATCHED
   ) {
     return (...args: Parameters<F>) => {
       this.lifeCycleEvent(MiddlewareEvents.onBeforeUpdate);

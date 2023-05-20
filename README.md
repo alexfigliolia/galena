@@ -151,6 +151,20 @@ AppState.get("nameOfState");
 AppState.update("nameOfState", (state) => {});
 
 /**
+ * Background Update
+ * 
+ * Runs a higher-priority mutation a unit of state
+*/
+AppState.backgroundUpdate("nameOfState", (state) => {});
+
+/**
+ * Priority Update
+ * 
+ * Runs a highest-priority mutation a unit of state
+*/
+AppState.priorityUpdate("nameOfState", (state) => {});
+
+/**
  * Subscribe
  * 
  * Registers a subscription on a unit of state

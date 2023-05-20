@@ -7,7 +7,7 @@ export type MutationEvent<T extends any> = {
 export enum Priority {
   "IMMEDIATE" = 1,
   "MICROTASK" = 2,
-  "BACKGROUND" = 3,
+  "BATCHED" = 3,
 }
 
 export type Task = () => void;
