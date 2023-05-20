@@ -124,6 +124,8 @@ Instances of `Galena` behave as a container for one or more units of `State`. Yo
 
 In `Galena`, your "global" application state exists in the form of operable sub-structures that can be individually subscribed to and mutated. This means, mutating one piece of your `State` does not effect other units of your `State`. This allows for the relief of several performance bottlenecks that are common in state management libraries that offer "global" application states. In `Galena`, you get the performance of island architecture with the option to also have a predictable global application state.
 
+#### Galena Public Methods
+
 ```typescript
 import { Galena, Logger, Profiler } from "galena";
 import type { State } from "galena";
@@ -134,7 +136,7 @@ const AppState = new Galena(/* middleware */ [new Logger(), new Profiler()]);
  * Compose State 
  * 
  * Creates a unit of `State` connected to your `Galena` instance.
- * Returns the unit of `State`
+ * Returns a unit of `State`
 */
 AppState.composeState("nameOfState" /* unique name */, /* initial state */, /* Optional Model */);
 
@@ -158,7 +160,7 @@ AppState.update("nameOfState", (state) => {});
 /**
  * Background Update
  * 
- * Runs a higher-priority mutation a unit of state. This method 
+ * Runs a higher-priority mutation on a unit of state. This method 
  * will bypass batching in favor of a scheduled propagation of 
  * changes to subscribers of your state. This method is great for
  * prioritizing state updates driven by frequent user-input such
@@ -169,7 +171,7 @@ AppState.backgroundUpdate("nameOfState", (state) => {});
 /**
  * Priority Update
  * 
- * Runs a highest-priority mutation a unit of state. This method
+ * Runs a highest-priority mutation on a unit of state. This method
  * bypasses all batching and scheduling optimizations in Galena.
  * When using `priorityUpdate()` your state changes are immediately
  * propagated to your state subscribers ahead of all scheduled and
@@ -184,7 +186,7 @@ AppState.priorityUpdate("nameOfState", (state) => {});
  * 
  * Registers a subscription on a unit of state
 */
-const subscription = AppState.update("nameOfState", (state) => {});
+const subscription = AppState.subscribe("nameOfState", (state) => {});
 
 /**
  * Unsubscribe
@@ -212,7 +214,7 @@ AppState.unsubscribeAll(subscription);
 ```
 
 ### State
-While instances of `Galena` behave as a container for units of state, the `State` interface serves as the unit itself. The `State` interface has a predictable API designed to make composing your states simple and effective. Whether you compose your state using "global" state or island architecture, the underlying API for your units of state look like the following:
+While instances of `Galena` behave as a container for units of state, the `State` interface serves as the unit itself. The `State` interface has a predictable API designed to make composing your states simple and effective. Whether you compose your state using a "global" state or island architecture, the underlying API for your units of state look like the following:
 
 ```typescript
 import { State, Logger, Profiler } from "galena";
@@ -229,9 +231,9 @@ MyState.getState();
 /**
  * Update
  * 
- * Mutates a unit of state by name. This method by default
- * uses internal task batching in order to optimize dispatching 
- * state changes to consumers. This method is the most 
+ * Mutates the unit of state using the callback provided. This method
+ * by default uses internal task batching in order to optimize
+ * dispatching state changes to consumers. This method is the most 
  * performant way to mutate state in Galena!
 */
 MyState.update((currentState, initialState) => {
@@ -241,7 +243,7 @@ MyState.update((currentState, initialState) => {
 /**
  * Background Update
  * 
- * Runs a higher-priority mutation of your state. This method 
+ * Runs a higher-priority mutation on your state. This method 
  * will bypass batching in favor of a scheduled propagation of 
  * changes to subscribers of your state. This method is great for
  * prioritizing state updates driven by frequent user-input such
@@ -254,7 +256,7 @@ MyState.backgroundUpdate((currentState, initialState) => {
 /**
  * Priority Update
  * 
- * Runs the highest-priority mutation of your state. This method
+ * Runs a highest-priority mutation on your state. This method
  * bypasses all batching and scheduling optimizations in Galena.
  * When using `priorityUpdate()` your state changes are immediately
  * propagated to your state subscribers ahead of all scheduled and
@@ -324,10 +326,10 @@ MyState.mutation(/* callback */);
 ```
 
 ### Middleware
-Galena supports developers creating enhancements for their usage of `Galena`. Out of the box `Galena` comes with middleware for Logging and Profiling that can be used for making development with `Galena` more intuitive. To opt into `Galena`'s built-in middleware, simply pass them to your `Galena` instance when calling
+Galena supports developers creating enhancements for their usage of `Galena`. Out of the box `Galena` comes with middleware for Logging and Profiling that can be used for making development with `Galena` more intuitive. To opt into `Galena`'s built-in middleware, simply pass them to your `Galena` instance when calling `new Galena()`
 
 #### Logging Middleware 
-A redux-style state transition logger that prints to the console each time state updates. The Logger will log the previous state, the current state, and tell you which `State` instance has changed.
+Galena comes with a redux-style state transition logger that prints to the console each time state updates. The Logger will log the previous state, the current state, and tell you which unit of `State` has changed.
 
 ```typescript
 import { Galena, Logger } from "galena";
@@ -337,7 +339,7 @@ const AppState = new Galena([new Logger()]);
 ```
 
 #### Profiling Middleware
-This middleware monitors the duration of all state transitions. When a state transition exceeds 16ms, a warning is printed to the console notifying the developer of a potential bottleneck in his or her application. By default the Profiler will log each time a state transition exceeds one full frame (16ms). This threshold can be adjusted by calling `new Logger(/* any number of milliseconds */)`
+Galena also comes with a Profiler that can track the duration of all state transitions. When a state transition exceeds 16ms, a warning is printed to the console notifying the developer of a potential bottleneck in his or her application. By default the Profiler will log each time a state transition exceeds one full frame (16ms). This threshold can be adjusted by calling `new Profiler(/* any number of milliseconds */)`
 
 ```typescript
 import { Galena, Profiler } from "galena";
@@ -377,7 +379,7 @@ FrequentlyUpdatedState.registerMiddleware(new Profiler());
 #### Creating Middleware
 Galena's middleware architecture operates on fixed set of events that are triggered each time a state mutation takes place. When state is mutated in your application, the `Middleware`'s `onBeforeUpdate()` and `onUpdate()` methods are called. Using these events, you can compose logic for auditing and enhancing your state updates! Let's take a look at a real world example.
 
-Let's say we have an application that does not use typescript and we want to achieve type-safety for a unit of our application state. To achieve this, we'll create a middleware that validates state changes to our hypothetical state in real time. 
+Let's say we have an application that does not use typescript and we want to achieve type-safety for a unit of our application state. To achieve this, we'll create a middleware that validates changes to our state in real time. 
 
 In the example below, we'll create a unit of state holding unique identifiers for users that are connections of the current user:
 
@@ -446,7 +448,7 @@ if(process.env.NODE_ENV !== "production") {
 The `Galena` library is designed to promote extension of its features. In doing so, it's possible to achieve a very strong Model/Controller layer for your applications. I'm going to demonstrate a few techniques for not only utilizing `Galena` as is, but building proprietary Models and Controllers for your applications.
 
 #### Extending State
-Galena's `State` interface is designed to be an out-of-the-box solution for housing any portion of your application's state. There are benefits however, to extending is functionality to compose proprietary models for your units of state:
+Galena's `State` interface is designed to be an out-of-the-box solution for housing any portion of your application's state. There are benefits however, to extending its functionality to compose proprietary models for your units of state:
 
 ##### Creating State Models
 ```typescript
@@ -515,7 +517,7 @@ In several areas of the `Galena` readme, there are references to performance and
 In Galena, state mutations can occur in-place (`O(1)` space). While you can use immutable data structures if you like, it's not required when using this library - by design. This is because even the most basic immutable state updates are about 4-5x slower than mutable state updates. This `4-5x` balloons even larger the more your state grows. When building `Galena`, I wanted to remove the notion of immutability wherever possible.
 
 #### Composition of State
-To further promote efficient state mutations, `Galena`'s composition architecture allows units of state to be operable without effecting adjacent units of state. This means you can can safely make *extremely* frequent updates to your state and be sure that your updates are scoped to specific units - and not your *entire* application state. This optimization extends to subscriptions as well! The only subscriptions that will ever be triggered when state changes, are the ones directly applied to the unit changing.
+To further promote efficient state mutations, `Galena`'s composition architecture allows units of state to be operable without effecting adjacent units of state. This means you can can safely make *extremely* frequent updates to your state and be sure that your updates are scoped to specific units - and not your *entire* application state. This optimization extends to subscriptions as well. The only subscriptions that will ever be triggered when state changes, are the ones directly applied to the unit changing.
 
 #### Benchmarking
 Using 2 identical applications, I've profiled the performance of Galena vs. Redux using 10,000 state updates and 10 connected React Components that'll rerender on each state change. The results looked like the following:
