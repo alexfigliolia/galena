@@ -1,19 +1,20 @@
 # Galena
 Lightning fast platform agnostic state! Galena is a one-stop-shop for creating reactive state that supports your global application or individually isolated features. Galena operates on the premise of pub-sub and mutability allowing for significantly higher performance over more traditional state management utilities. 
 
-In Galena, your state architecture is a composition of reactive units that can be declared at any point in your application lifecycle. Your units of state can exist in isolation (similar to React Contexts) or as part of one or more global application states (similar to Redux). Galena offers a global application state solution that supports lazy initialization of state units, performant updates, and rich development API.
+In Galena, your state architecture is a composition of reactive units that can be declared at any point in your application lifecycle. Your units of state can exist in isolation (similar to React Contexts) or as part of one or more global application states (similar to Redux). Galena offers a global application state solution that supports lazy initialization of state, performant updates, and a rich development API.
 
-## Getting Started
+# Getting Started
 
-### Installation
+## Installation
 ```bash
 npm install --save galena
 # or
 yarn add galena
 ```
 
-### Composing Your Application State
-#### Global Application State Architecture
+## Composing Your Application State
+### Global Application State Architecture
+Creating a "global" application state begins with initializing a `Galena` instance. Your `Galena` instances act as a container from which units of state can be composed:
 
 ```typescript
 // AppState.ts
@@ -30,7 +31,8 @@ if(process.env.NODE_ENV === "development") {
 export const AppState = new Galena(middleware);
 ```
 
-#### Creating a Unit of State
+Now that we have our `AppState` instance, let's compose a unit of state for it!
+
 ```typescript
 // NavigationState.ts
 import { AppState } from "./AppState.ts";
@@ -44,7 +46,7 @@ export const NavigationState = AppState.composeState("navigation", {
 });
 ```
 
-Creating units of state using `AppState.composeState()` will automatically scope your new unit of state to your `Galena` instance. You can then access, subscribe, and update your state using using your `Galena` instance or the `State` instance returned from `AppState.composeState()`.
+Creating units of state using `AppState.composeState()` will automatically scope your new unit of state to your `Galena` instance. You can then access, subscribe, and update your state using using your `Galena` instance or unit of `State` returned from `AppState.composeState()`:
 
 #### State Operations Using Your Galena Instance
 
@@ -84,7 +86,7 @@ NavigationState.update(state => {
 NavigationState.unsubscribe(subscription);
 ```
 
-Running mutations on individual units of state will automatically update your `Galena` instance's state!
+Running mutations on individual units of state will automatically update your `Galena` instance's state! Your `Galena` instance will internally track changes to each unit of state that it composes. 
 
 ### Isolated State Architecture
 
@@ -112,10 +114,10 @@ FeatureState.update((state) => {
 FeatureState.unsubscribe(subscription);
 ```
 
-The API for isolated units of State is the same as the API for units connected to a `Galena` instance.
+The API for isolated units of State is the same as the API for units connected to a `Galena` instance. When using `Galena` it's totally normal to have one or more "global" states along side any number of island states for isolate-able features. The composition patterns that can be used for your application state are virtually limitless! 
 
-### API Reference
-#### Galena
+## API Reference
+### Galena
 Instances of `Galena` behave as a container for one or more units of `State`. Your `Galena` instance is designed to replicate the "global" application state pattern, but without the overhead of
 1. Declaring all of your units of state early in your application lifecycle
 2. Making complex mutations to large state objects.
@@ -146,21 +148,34 @@ AppState.get("nameOfState");
 /**
  * Update
  * 
- * Mutates a unit of state by name
+ * Mutates a unit of state by name. This method by default
+ * uses internal batching in order to optimize the dispatching
+ * of state changes to consumers. This method is the most 
+ * performant way to mutate state in Galena!
 */
 AppState.update("nameOfState", (state) => {});
 
 /**
  * Background Update
  * 
- * Runs a higher-priority mutation a unit of state
+ * Runs a higher-priority mutation a unit of state. This method 
+ * will bypass batching in favor of a scheduled propagation of 
+ * changes to subscribers of your state. This method is great for
+ * prioritizing state updates driven by frequent user-input such
+ * as typing into a form or game logic.
 */
 AppState.backgroundUpdate("nameOfState", (state) => {});
 
 /**
  * Priority Update
  * 
- * Runs a highest-priority mutation a unit of state
+ * Runs a highest-priority mutation a unit of state. This method
+ * bypasses all batching and scheduling optimizations in Galena.
+ * When using `priorityUpdate()` your state changes are immediately
+ * propagated to your state subscribers ahead of all scheduled and
+ * batched updates. This method is great for usage with external
+ * scheduling mechanisms such as `requestAnimationFrame`, `intervals`,
+ * and/or `timeouts`
 */
 AppState.priorityUpdate("nameOfState", (state) => {});
 
@@ -175,7 +190,7 @@ const subscription = AppState.update("nameOfState", (state) => {});
  * Unsubscribe
  * 
  * Closes an open subscription given a subscription ID
- * returned by `new Galena().subscribe`
+ * returned by `new Galena().subscribe()`
 */
 AppState.unsubscribe(subscription);
 
@@ -183,7 +198,8 @@ AppState.unsubscribe(subscription);
  * Subscribe All
  * 
  * Registers a global subscription on each State registered to
- * your Galena instance
+ * your Galena instance. Your callback will be invoked any 
+ * time a unit of state is updated
 */
 const subscription = AppState.subscribeAll(appState => {});
 
@@ -195,8 +211,8 @@ const subscription = AppState.subscribeAll(appState => {});
 AppState.unsubscribeAll(subscription);
 ```
 
-#### State
-While instances of `Galena` behave as a container for units of state, the `State` interface serves as the units. The `State` interface has a predictable API designed to make composing your states simple and effective.
+### State
+While instances of `Galena` behave as a container for units of state, the `State` interface serves as the unit itself. The `State` interface has a predictable API designed to make composing your states simple and effective. Whether you compose your state using "global" state or island architecture, the underlying API for your units of state look like the following:
 
 ```typescript
 import { State, Logger, Profiler } from "galena";
@@ -212,26 +228,25 @@ MyState.getState();
 
 /**
  * Update
- *
- * Mutates state and notifies any open subscriptions. This method
- * by default uses task batching for optimized performance. In almost
- * every use-case, this method is the correct way to mutate state. If 
- * you need to bypass batching for higher-priority state updates, you 
- * can use `State.priorityUpdate()` or `State.backgroundUpdate()`
- */
+ * 
+ * Mutates a unit of state by name. This method by default
+ * uses internal task batching in order to optimize dispatching 
+ * state changes to consumers. This method is the most 
+ * performant way to mutate state in Galena!
+*/
 MyState.update((currentState, initialState) => {
   currentState.someValue = "new value!"
 });
 
 /**
  * Background Update
- *
- * Mutates state and notifies any open subscriptions. This method
- * bypasses Galena's internal task batching for a more immediate
- * state update and propagation of state to consumers. It utilizes
- * a micro-task that allows for the current call stack to clear 
- * ahead of propagating state updates to consumers
- */
+ * 
+ * Runs a higher-priority mutation of your state. This method 
+ * will bypass batching in favor of a scheduled propagation of 
+ * changes to subscribers of your state. This method is great for
+ * prioritizing state updates driven by frequent user-input such
+ * as typing into a form or game logic.
+*/
 MyState.backgroundUpdate((currentState, initialState) => {
   currentState.someValue = "new value!"
 });
@@ -239,14 +254,14 @@ MyState.backgroundUpdate((currentState, initialState) => {
 /**
  * Priority Update
  * 
- * Mutates state and notifies any open subscriptions. This method
- * bypasses optimizations for task batching and scheduling. This means
- * that state updates made with this method propagate to subscriptions
- * as immediately as possible. Overusing this method can cause your
- * state updates to perform slower in certain cases. The usage of this
- * method should be conserved for state mutations that need to occur
- * at a certain frame rate
- */
+ * Runs the highest-priority mutation of your state. This method
+ * bypasses all batching and scheduling optimizations in Galena.
+ * When using `priorityUpdate()` your state changes are immediately
+ * propagated to your state subscribers ahead of all scheduled and
+ * batched updates. This method is great for usage with external
+ * scheduling mechanisms such as `requestAnimationFrame`, `intervals`,
+ * and/or `timeouts`
+*/
 MyState.priorityUpdate((currentState, initialState) => {
   currentState.someValue = "new value!"
 });
@@ -259,20 +274,6 @@ MyState.priorityUpdate((currentState, initialState) => {
 MyState.reset();
 
 /**
- * Mutation
- *
- * This method can be used to wrap arbitrary functions that when invoked
- * will:
- * 1. Notify your subscriptions with the latest state
- * 2. Execute any registered middleware (such as loggers or profiling tools)
- *
- * Using this method, developers can compose and extend `Galena`'s internal
- * infrastructure for state mutations to create proprietary models for your
- * state
-*/
-MyState.mutation(/* callback */);
-
-/**
  * Register Middleware
  * 
  * Applies any number of Middleware instances to your State
@@ -282,7 +283,7 @@ MyState.registerMiddleware(/* Middleware */ new Logger(), new Profiler());
 /**
  * Subscribe
  * 
- * Given a callback, invokes the callback each time `MyState`
+ * Given a callback, invokes the callback each time your state
  * changes. Returns a subscription ID
 */
 const subscription = MyState.subscribe(state => {});
@@ -291,9 +292,35 @@ const subscription = MyState.subscribe(state => {});
  * Unsubscribe
  * 
  * Closes an open subscription given a subscription ID
- * returned by `new State().subscribe`
+ * returned by `new State().subscribe()`
 */
 MyState.unsubscribe(subscription);
+
+/**
+ * Mutation (protected)
+ *
+ * This method can be used to wrap arbitrary functions that 
+ * when invoked will:
+ * 1. Notify your subscriptions with the latest state
+ * 2. Execute any registered middleware (such as loggers or 
+ * profiling tools)
+ *
+ * Using this method, developers can compose and extend `Galena`'s 
+ * internal infrastructure for mutating state to create proprietary
+ * processes for individual units of state. 
+ * 
+ * In order to access this method, you'll need to extend `State`
+ * using:
+ * 
+ * ```typescript
+ * class MyState extends State {
+ *   proprietaryMutation = this.mutation((...anyArgs) => {
+ *     // any logic
+ *   });
+ * }
+ * ```
+*/
+MyState.mutation(/* callback */);
 ```
 
 ### Middleware
