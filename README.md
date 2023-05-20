@@ -122,7 +122,7 @@ Instances of `Galena` behave as a container for one or more units of `State`. Yo
 1. Declaring all of your units of state early in your application lifecycle
 2. Making complex mutations to large state objects.
 
-In `Galena`, your "global" application state exists in the form of operable sub-structures that can be individually subscribed to and mutated. This means, mutating one piece of your `State` does not effect other units of your `State`. This allows for the relief of several performance bottlenecks that are common in state management libraries that "global" application states. In `Galena`, you get the performance of island architecture with the option to also have a predictable global application state.
+In `Galena`, your "global" application state exists in the form of operable sub-structures that can be individually subscribed to and mutated. This means, mutating one piece of your `State` does not effect other units of your `State`. This allows for the relief of several performance bottlenecks that are common in state management libraries that offer "global" application states. In `Galena`, you get the performance of island architecture with the option to also have a predictable global application state.
 
 ```typescript
 import { Galena, Logger, Profiler } from "galena";
