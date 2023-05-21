@@ -46,7 +46,7 @@ export const NavigationState = AppState.composeState("navigation", {
 });
 ```
 
-Creating units of state using `AppState.composeState()` will automatically scope your new unit of state to your `Galena` instance. You can then access, subscribe, and update your state using using your `Galena` instance or unit of `State` returned from `AppState.composeState()`:
+Creating units of state using `AppState.composeState()` will scope your new unit of state to your `Galena` instance. You can then access, subscribe, and update your state using using your `Galena` instance or the unit of `State` returned from `AppState.composeState()`:
 
 #### State Operations Using Your Galena Instance
 
@@ -307,9 +307,9 @@ MyState.unsubscribe(subscription);
  * 2. Execute any registered middleware (such as loggers or 
  * profiling tools)
  *
- * Using this method, developers can compose and extend `Galena`'s 
- * internal infrastructure for mutating state to create proprietary
- * processes for individual units of state. 
+ * Using this method, developers can trigger or extend `Galena`'s 
+ * internals for dispatching events and mutating state to create
+ * proprietary processes for an individual unit of state. 
  * 
  * In order to access this method, you'll need to extend `State`
  * using:
@@ -517,7 +517,7 @@ In several areas of the `Galena` readme, there are references to performance and
 In Galena, state mutations can occur in-place (`O(1)` space). While you can use immutable data structures if you like, it's not required when using this library - by design. This is because even the most basic immutable state updates are about 4-5x slower than mutable state updates. This `4-5x` balloons even larger the more your state grows. When building `Galena`, I wanted to remove the notion of immutability wherever possible.
 
 #### Composition of State
-To further promote efficient state mutations, `Galena`'s composition architecture allows units of state to be operable without effecting adjacent units of state. This means you can can safely make *extremely* frequent updates to your state and be sure that your updates are scoped to specific units - and not your *entire* application state. This optimization extends to subscriptions as well. The only subscriptions that will ever be triggered when state changes, are the ones directly applied to the unit changing.
+To further promote efficient state mutations, `Galena`'s composition architecture allows units of state to be operable without effecting adjacent units of state. This means you can can safely make *extremely* frequent updates to your state and be sure that your updates are scoped to specific units - and not your *entire* application state. This optimization extends to subscriptions as well. The only subscriptions that will ever be triggered when state changes, are the ones directly bound to the unit that is changing.
 
 #### Benchmarking
 Using 2 identical applications, I've profiled the performance of Galena vs. Redux using 10,000 state updates and 10 connected React Components that'll rerender on each state change. The results looked like the following:
