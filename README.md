@@ -54,7 +54,7 @@ Creating units of state using `AppState.composeState()` will scope your new unit
 // BusinessLogic.ts 
 import { AppState } from "./AppState.ts";
 
-const subscription = AppState.subscribe("navigation", navigationState => {
+const subscription = AppState.subscribe("navigation", state => {
   // React to changes to Navigation state
 });
 

@@ -53,7 +53,7 @@ import { Scheduler } from "./Scheduler";
  *
  * #### Subscribing to State Changes
  * ```typescript
- * MyState.subscribe(({ state }) => {
+ * MyState.subscribe((state) => {
  *   const { listItems } = state
  *   // Do something with your list items!
  * });
@@ -237,7 +237,10 @@ export class State<T extends any = any> extends Scheduler {
    */
   private scheduleUpdate(priority: Priority) {
     this.lifeCycleEvent(MiddlewareEvents.onUpdate);
-    void this.scheduleTask(() => this.emitter.emit(this.name, this), priority);
+    void this.scheduleTask(
+      () => this.emitter.emit(this.name, this.state),
+      priority
+    );
   }
 
   /**
@@ -257,7 +260,7 @@ export class State<T extends any = any> extends Scheduler {
    * callback you provide will execute each time state changes.
    * Returns a unique identifier for your subscription
    */
-  public subscribe(callback: (nextState: State<T>) => void) {
+  public subscribe(callback: (nextState: T) => void) {
     return this.emitter.on(this.name, callback);
   }
 

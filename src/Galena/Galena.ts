@@ -30,32 +30,32 @@ import { State } from "Galena/State";
  * import { AppState } from "./AppState";
  *
  * AppState.subscribe(appState => {
- *  const navState = appState.get("navigation");
- *  const { currentRoute } = navState.state;
- *  // do something with state changes!
+ *   const navState = appState.get("navigation");
+ *   const { currentRoute } = navState.state;
+ *   // do something with state changes!
  * });
  * ```
  * #### Using the State Instance
  * ```typescript
  * NavigationState.subscribe(navigation => {
- *  const { currentRoute } = navigation.state
- *  // do something with state changes!
+ *   const { currentRoute } = navigation
+ *   // do something with state changes!
  * });
  * ```
  *
  * #### Using Global Subscriptions
  * ```typescript
- * NavigationState.subscribeAll(galenaInstance => {
- *  const { currentRoute } = galenaInstance.get("navigation").state
- *  // do something with state changes!
+ * NavigationState.subscribeAll(nextState => {
+ *   const { currentRoute } = nextState.navigation
+ *   // do something with state changes!
  * });
  * ```
  *
  * ### Mutating State
  * ```typescript
  * NavigationState.update(state => {
- *  state.currentRoute = "/profile";
- *  // You can mutate state without creating new objects!
+ *   state.currentRoute = "/profile";
+ *   // You can mutate state without creating new objects!
  * });
  * ```
  */
@@ -166,9 +166,9 @@ export class Galena<
    */
   public subscribe<K extends keyof T>(
     name: K,
-    mutation: Parameters<T[K]["subscribe"]>["0"]
+    callback: Parameters<T[K]["subscribe"]>["0"]
   ) {
-    return this.get(name).subscribe(mutation);
+    return this.get(name).subscribe(callback);
   }
 
   /**
@@ -192,14 +192,14 @@ export class Galena<
    * subscription, call `Galena.unsubscribeAll()` with the ID
    * returned
    */
-  public subscribeAll(callback: (state: Galena<T>) => void) {
+  public subscribeAll(callback: (nextState: T) => void) {
     const subscriptionID = this.IDs.get();
     const stateSubscriptions: [state: string, ID: string][] = [];
     for (const key in this.state) {
       stateSubscriptions.push([
         key,
         this.state[key].subscribe(() => {
-          callback(this);
+          callback(this.state);
         }),
       ]);
     }
