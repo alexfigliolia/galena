@@ -17,7 +17,6 @@ import { Middleware } from "Middleware/Middleware";
  */
 export class Logger extends Middleware {
   private previousState: Record<string, any> | null = null;
-  scopedMutation: ((...args: any[]) => any) | null = null;
 
   override onBeforeUpdate(state: State) {
     this.previousState = State.clone(state.state);

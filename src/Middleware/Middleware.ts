@@ -5,11 +5,13 @@ import type { MiddlewareEvent } from "Middleware/types";
 import { MiddlewareEvents } from "Middleware/types";
 
 /**
- * Middleware
+ * # Middleware
  *
  * A root interface for all `Galena` Middleware. When creating
  * a middleware for your `Galena` state, simply extend this
- * class any override any of its public lifecycle methods:
+ * class any override any of its public lifecycle methods.
+ *
+ * ### Creating a Profiling Middleware
  *
  * ```typescript
  * export class ProfilerMiddleware extends Middleware {

@@ -43,6 +43,14 @@ import { State } from "Galena/State";
  * });
  * ```
  *
+ * #### Using Global Subscriptions
+ * ```typescript
+ * NavigationState.subscribeAll(galenaInstance => {
+ *  const { currentRoute } = galenaInstance.get("navigation").state
+ *  // do something with state changes!
+ * });
+ * ```
+ *
  * ### Mutating State
  * ```typescript
  * NavigationState.update(state => {

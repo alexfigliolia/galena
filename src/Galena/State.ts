@@ -10,20 +10,17 @@ import { Scheduler } from "./Scheduler";
  * The root of all reactivity in Galena. State instances can
  * operate in isolation by calling `new State(...args)` or as
  * part of your application's larger global state by using
- * `Galena.composeState()`.
+ * `new Galena().composeState()`.
  *
  * `State` instances operate on the premise of pub-sub and mutability.
  * This provides significant performance improvement over more traditional
- * state management tools because mutations can occur in O(1) space.
+ * state management tools because
  *
- * The pub-sub pattern allows for mutations to be propagated directly to
- * consumers following successful mutation transactions. Mutations can
- * be either sync or async without effecting the how subscriptions
- * are updated - with no need for any async middleware that you may
- * find in libraries like redux.
+ * 1. Mutations can occur in O(1) space
+ * 2. Mutations can be batched when dispatching updates to subscribers
  *
  * When deciding how many `State` instances are required for your
- * applications needs, we suggest creating an organizing state in
+ * applications needs, we suggest creating and organizing state in
  * accordance with your application logic. Meaning, you might have a
  * `State` instance for navigation/routing, another `State` instance
  * for storing user information, and so on. Performance can improve
@@ -56,8 +53,8 @@ import { Scheduler } from "./Scheduler";
  *
  * #### Subscribing to State Changes
  * ```typescript
- * MyState.subscribe(myState => {
- *   const { listItems } = myState.state
+ * MyState.subscribe(({ state }) => {
+ *   const { listItems } = state
  *   // Do something with your list items!
  * });
  * ```
