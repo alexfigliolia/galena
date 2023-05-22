@@ -195,7 +195,7 @@ export class State<T extends any = any> extends Scheduler {
    * state
    *
    * ```typescript
-   * import { State } from "galena";
+   * import { State } from "@figliolia/galena";
    *
    * // Extend of Galena State
    * class MyState extends State {

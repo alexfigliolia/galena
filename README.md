@@ -7,9 +7,9 @@ In Galena, your state architecture is a composition of reactive units that can b
 
 ## Installation
 ```bash
-npm install --save galena
+npm install --save @figliolia/galena
 # or
-yarn add galena
+yarn add @figliolia/galena
 ```
 
 ## Composing Your Application State
@@ -18,8 +18,8 @@ Creating a "global" application state begins with initializing a `Galena` instan
 
 ```typescript
 // AppState.ts
-import { Galena, Logger, Profiler } from "galena";
-import type { Middleware } from "galena";
+import { Galena, Logger, Profiler } from "@figliolia/galena";
+import type { Middleware } from "@figliolia/galena";
 
 const middleware: Middleware[] = [];
 
@@ -93,7 +93,7 @@ Running mutations on individual units of state will automatically update your `G
 You may also create units of state that are *not* connected to a "global" `Galena` instance. To promote flexibility for developers to organize their state however they wish, `Galena` exports its `State` object for usage directly:
 
 ```typescript
-import { State } from "galena";
+import { State } from "@figliolia/galena";
 
 // Create Your Isolated Unit of State
 const FeatureState = new State("myFeature", {
@@ -127,8 +127,8 @@ In `Galena`, your "global" application state exists in the form of operable sub-
 #### Galena Public Methods
 
 ```typescript
-import { Galena, Logger, Profiler } from "galena";
-import type { State } from "galena";
+import { Galena, Logger, Profiler } from "@figliolia/galena";
+import type { State } from "@figliolia/galena";
 
 const AppState = new Galena(/* middleware */ [new Logger(), new Profiler()]);
 
@@ -217,7 +217,7 @@ AppState.unsubscribeAll(subscription);
 While instances of `Galena` behave as a container for units of state, the `State` interface serves as the unit itself. The `State` interface has a predictable API designed to make composing your states simple and effective. Whether you compose your state using a "global" state or island architecture, the underlying API for your units of state look like the following:
 
 ```typescript
-import { State, Logger, Profiler } from "galena";
+import { State, Logger, Profiler } from "@figliolia/galena";
 
 const MyState = new State(/* a unique name */ "myState", /* initial state */);
 
@@ -332,7 +332,7 @@ Galena supports developers creating enhancements for their usage of `Galena`. Ou
 Galena comes with a redux-style state transition logger that prints to the console each time state updates. The Logger will log the previous state, the current state, and tell you which unit of `State` has changed.
 
 ```typescript
-import { Galena, Logger } from "galena";
+import { Galena, Logger } from "@figliolia/galena";
 
 // Enable logging!
 const AppState = new Galena([new Logger()]);
@@ -342,7 +342,7 @@ const AppState = new Galena([new Logger()]);
 Galena also comes with a Profiler that can track the duration of all state transitions. When a state transition exceeds 16ms, a warning is printed to the console notifying the developer of a potential bottleneck in his or her application. By default the Profiler will log each time a state transition exceeds one full frame (16ms). This threshold can be adjusted by calling `new Profiler(/* any number of milliseconds */)`
 
 ```typescript
-import { Galena, Profiler } from "galena";
+import { Galena, Profiler } from "@figliolia/galena";
 
 const AppState = new Galena([new Profiler()]);
 ```
@@ -353,7 +353,7 @@ Similar to a lot of stateful tools, `Galena` also exposes an API for creating yo
 #### Applying Middleware
 When applying middleware in `Galena`, you may choose to apply your middleware to *all* of your application state or just some of it. To apply middleware to each of your units of `State`, you can simply initialize `Galena` with the middleware that you enjoy using:
 ```typescript
-import { Galena, Profiler, Logger } from "galena";
+import { Galena, Profiler, Logger } from "@figliolia/galena";
 
 export const AppState = new Galena([new Profiler(), new Logger()]);
 ```
@@ -362,7 +362,7 @@ Using this method, whenever you create a new unit of state using `AppState.compo
 Alternatively, you may also choose to register a middleware on only some of your state:
 
 ```typescript
-import { Galena, Profiler, Logger } from "galena";
+import { Galena, Profiler, Logger } from "@figliolia/galena";
 
 // Let's add logging to all of our units of State
 export const AppState = new Galena([new Logger()]);
@@ -394,7 +394,7 @@ export const CurrentUserState = AppState.composeState("currentUser", {
 Next, let's create our own custom middleware for ensuring that all entries in the `connectedUsers` array are strings:
 
 ```typescript
-import { Middleware } from "galena";
+import { Middleware } from "@figliolia/galena";
 
 // Let's extend the Middleware class from the Galena library
 export class ConnectedUsersMiddleware extends Middleware {
@@ -429,7 +429,7 @@ export class ConnectedUsersMiddleware extends Middleware {
 
 Next let's bring this middleware into our application!
 ```typescript
-import { State } from "galena";
+import { State } from "@figliolia/galena";
 import { ConnectedUsersMiddleware } from "./ConnectedUsersMiddleware";
 
 export const CurrentUserState = AppState.composeState("currentUser", { 
@@ -453,7 +453,7 @@ Galena's `State` interface is designed to be an out-of-the-box solution for hous
 ##### Creating State Models
 ```typescript
 // UserModel.ts
-import { State } from "galena";
+import { State } from "@figliolia/galena";
 
 // Let's extend the `State` class for a hypothetical
 // user schema
@@ -480,7 +480,7 @@ Next, let's use our Model!
 
 ```typescript
 // AppState.ts
-import { Galena, State } from "galena";
+import { Galena, State } from "@figliolia/galena";
 import { UserModel } from "./UserModel";
 
 export const AppState = new Galena(/* middleware */);

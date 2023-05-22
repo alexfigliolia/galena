@@ -13,7 +13,7 @@ import { State } from "Galena/State";
  *
  * ```typescript
  * // AppState.ts
- * import { Galena } from "galena";
+ * import { Galena } from "@figliolia/galena";
  *
  * const AppState = new Galena([...middleware]);
  *
