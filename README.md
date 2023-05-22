@@ -531,4 +531,5 @@ As the application scales with more state updates and connected components, the 
 ### Support for Frontend Frameworks!
 `Galena` provides bindings for React through [react-galena](https://github.com/alexfigliolia/react-galena). This package provides factories for generating HOC's and hooks from your Galena instances and units of State!
 
-
+#### Demo Application
+To see some basic usage using Galena with React, please check out this [Example App](https://github.com/alexfigliolia/galena-quick-start)
