@@ -1,6 +1,6 @@
 {
   "name": "@figliolia/galena",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "A performant state management library supporting mutable state, batched updates, middleware and a rich development API",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -47,7 +47,6 @@
     "eslint-import-resolver-typescript": "^3.5.5",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-prettier": "^4.2.1",
-    "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-simple-import-sort": "^10.0.0",
     "prettier": "^2.8.8",
     "ts-node": "^10.9.1",
