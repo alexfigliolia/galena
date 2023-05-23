@@ -9,9 +9,7 @@ import type { State } from "./State";
  * warning methods that can be used to prevent invalid usage
  * of the library
  */
-export class Guards<
-  T extends Record<string, State<any>> = Record<string, State<any>>
-> {
+export class Guards {
   /**
    * Warn For Undefined States
    *
@@ -21,10 +19,13 @@ export class Guards<
    * unit of state that has not yet been initialized
    */
   protected warnForUndefinedStates = this.developmentGuard(
-    (name: string, state: T) => {
+    <T extends Record<string, State<any>>, K extends Extract<keyof T, string>>(
+      name: K,
+      state: T
+    ) => {
       if (!process.env.IGNORE_LAZY_STATE_WARNINGS && !(name in state)) {
         console.warn(
-          `A unit of state with the name "${name}" does not yet exist on this Galena instance. If this is expected, you can ignore this warning. To make these warnings go away, you can enable this process argument - "IGNORE_WARNINGS_FOR_LAZY_STATES=1"`
+          `A unit of state with the name "${name}" does not yet exist on this Galena instance. If this is expected, you can ignore this warning. To make these warnings go away, you can enable this process argument - "IGNORE_LAZY_STATE_WARNING=1"`
         );
       }
     }
@@ -38,7 +39,10 @@ export class Guards<
    * `Galena` instance
    */
   protected guardDuplicateStates = this.developmentGuard(
-    (name: string, state: T) => {
+    <T extends Record<string, State<any>>, K extends Extract<keyof T, string>>(
+      name: K,
+      state: T
+    ) => {
       if (name in state) {
         throw new Error(
           `A unit of state with the name "${name}" already exists on this Galena instance. Please re-name this new unit of state to something unique`

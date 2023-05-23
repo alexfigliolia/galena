@@ -62,7 +62,7 @@ import { Guards } from "./Guards";
  */
 export class Galena<
   T extends Record<string, State<any>> = Record<string, State<any>>
-> extends Guards<T> {
+> extends Guards {
   public readonly state = {} as T;
   private readonly subscriptions = new Map<
     string,
