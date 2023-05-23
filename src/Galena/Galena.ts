@@ -3,6 +3,7 @@ import { AutoIncrementingID } from "@figliolia/event-emitter";
 import type { Middleware } from "Middleware/Middleware";
 
 import { State } from "Galena/State";
+import { Guards } from "./Guards";
 
 /**
  * ## Galena
@@ -61,15 +62,16 @@ import { State } from "Galena/State";
  */
 export class Galena<
   T extends Record<string, State<any>> = Record<string, State<any>>
-> {
+> extends Guards<T> {
   public readonly state = {} as T;
-  private readonly middleware: Middleware[] = [];
-  private readonly IDs = new AutoIncrementingID();
   private readonly subscriptions = new Map<
     string,
     [state: string, ID: string][]
   >();
+  private readonly middleware: Middleware[] = [];
+  private readonly IDs = new AutoIncrementingID();
   constructor(middleware: Middleware[] = []) {
+    super();
     this.middleware = middleware;
   }
 
@@ -91,6 +93,7 @@ export class Galena<
     // @ts-ignore
     Model: M = State<S>
   ) {
+    this.guardDuplicateStates(name, this.state);
     const state = new Model(name, initialState);
     state.registerMiddleware(...this.middleware);
     this.mutable[name] = state;
@@ -103,7 +106,8 @@ export class Galena<
    *
    * Returns a unit of `State` by name
    */
-  public get<K extends keyof T>(name: K): T[K] {
+  public get<K extends Extract<keyof T, string>>(name: K): T[K] {
+    this.warnForUndefinedStates(name, this.state);
     return this.state[name];
   }
 
@@ -121,7 +125,7 @@ export class Galena<
    *
    * Runs a mutation on the specified unit of state
    */
-  public update<K extends keyof T>(
+  public update<K extends Extract<keyof T, string>>(
     name: K,
     mutation: Parameters<T[K]["update"]>["0"]
   ) {
@@ -134,7 +138,7 @@ export class Galena<
    * Runs a higher priority mutation on the specified unit of
    * state
    */
-  public backgroundUpdate<K extends keyof T>(
+  public backgroundUpdate<K extends Extract<keyof T, string>>(
     name: K,
     mutation: Parameters<T[K]["backgroundUpdate"]>["0"]
   ) {
@@ -147,7 +151,7 @@ export class Galena<
    * Runs an immediate priority mutation on the specified unit
    * of state
    */
-  public priorityUpdate<K extends keyof T>(
+  public priorityUpdate<K extends Extract<keyof T, string>>(
     name: K,
     mutation: Parameters<T[K]["priorityUpdate"]>["0"]
   ) {
@@ -164,7 +168,7 @@ export class Galena<
    * subscription, call `Galena.unsubscribe()` with the ID returned
    * by this method
    */
-  public subscribe<K extends keyof T>(
+  public subscribe<K extends Extract<keyof T, string>>(
     name: K,
     callback: Parameters<T[K]["subscribe"]>["0"]
   ) {
@@ -177,7 +181,7 @@ export class Galena<
    * Given a subscription ID returned from the `subscribe` method,
    * this method removes and cleans up the corresponding subscription
    */
-  public unsubscribe<K extends keyof T>(name: K, ID: string) {
+  public unsubscribe<K extends Extract<keyof T, string>>(name: K, ID: string) {
     return this.get(name).unsubscribe(ID);
   }
 
@@ -193,7 +197,6 @@ export class Galena<
    * returned
    */
   public subscribeAll(callback: (nextState: T) => void) {
-    const subscriptionID = this.IDs.get();
     const stateSubscriptions: [state: string, ID: string][] = [];
     for (const key in this.state) {
       stateSubscriptions.push([
@@ -203,6 +206,7 @@ export class Galena<
         }),
       ]);
     }
+    const subscriptionID = this.IDs.get();
     this.subscriptions.set(subscriptionID, stateSubscriptions);
     return subscriptionID;
   }
