@@ -33,7 +33,7 @@ import { MiddlewareEvents } from "Middleware/types";
  * ```
  */
 export class Middleware<T extends any = any> {
-  public static Emitter = new EventEmitter<MiddlewareEvent<any>>();
+  private static Emitter = new EventEmitter<MiddlewareEvent<any>>();
   constructor() {
     const extension = Object.getPrototypeOf(this);
     const methods = Object.getOwnPropertyNames(extension);
