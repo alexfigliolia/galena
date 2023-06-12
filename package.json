@@ -1,6 +1,6 @@
 {
   "name": "@figliolia/galena",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "description": "A performant state management library supporting mutable state, batched updates, middleware and a rich development API",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -34,7 +34,7 @@
     "lint": "tsc --noemit && eslint ./ --fix"
   },
   "dependencies": {
-    "@figliolia/event-emitter": "^1.0.7"
+    "@figliolia/event-emitter": "^1.0.8"
   },
   "devDependencies": {
     "@types/node": "^16.7.13",
