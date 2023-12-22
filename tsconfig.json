@@ -39,6 +39,7 @@
 		}
 	},
 	"include": [
+		"package.json",
 		"src"
 	]
 }

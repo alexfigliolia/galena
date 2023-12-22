@@ -84,14 +84,10 @@ export class Galena<
    * state will automatically receive updates when your new unit of
    * state updates
    */
-  public composeState<
-    S extends any,
-    M extends typeof State<S> = typeof State<S>
-  >(
+  public composeState<S extends any, M extends typeof State<S>>(
     name: string,
     initialState: S,
-    // @ts-ignore
-    Model: M = State<S>
+    Model = State<S>
   ) {
     this.guardDuplicateStates(name, this.state);
     const state = new Model(name, initialState);
@@ -99,6 +95,15 @@ export class Galena<
     this.mutable[name] = state;
     this.reIndexSubscriptions(name);
     return state as InstanceType<M>;
+  }
+
+  /**
+   * Get State
+   *
+   * Returns a mutable state instance
+   */
+  public getState() {
+    return this.state as Readonly<T>;
   }
 
   /**

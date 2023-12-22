@@ -133,6 +133,14 @@ import type { State } from "@figliolia/galena";
 const AppState = new Galena(/* middleware */ [new Logger(), new Profiler()]);
 
 /**
+ * Get State
+ * 
+ * Returns the current state tree with each attached
+ * unit. The object returned is readonly
+*/
+AppState.getState();
+
+/**
  * Compose State 
  * 
  * Creates a unit of `State` connected to your `Galena` instance.
