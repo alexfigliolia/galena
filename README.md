@@ -107,7 +107,7 @@ const subscription = FeatureState.subscribe((state) => {
 
 FeatureState.update((state) => {
   // Update feature state!
-  state.list.push(state.list.length);
+  state.list = [...state.list, state.list.length];
 });
 
 // Clean up subscriptions
@@ -393,7 +393,7 @@ In the example below, we'll create a unit of state holding unique identifiers fo
 
 ```typescript
 export const CurrentUserState = AppState.composeState("currentUser", { 
-  userID: 1, 
+  userID: "1", 
   username: "currentUser", 
   connectedUsers: ["2", "3", "4", "5"]
 });
@@ -470,9 +470,17 @@ export class UserModel extends State<{
   username: string;
   connectedUsers: string[];
 }> {
+  constructor() {
+    super("User State", {
+      userID: "",
+      username: "",
+      connectedUsers: []
+    })
+  }
+
   public addConnection(userID: string) {
     this.update(state => {
-      state.connectedUsers.push(userID);
+      state.connectedUsers = [...state.connectedUsers, userID];
     });
   }
 
@@ -537,7 +545,7 @@ Using 2 identical applications, I've profiled the performance of Galena vs. Redu
 As the application scales with more state updates and connected components, the spread between `Galena` and Redux grows even further. Although I don't believe most applications will ever require 10,000 immediate state updates (unless building a game-like experience), `Galena` does relieve the bottle-necks of popular state management utilities quite well.
 
 ### Support for Frontend Frameworks!
-`Galena` provides bindings for React through [react-galena](https://github.com/alexfigliolia/react-galena). This package provides factories for generating HOC's and hooks from your Galena instances and units of State!
+`Galena` provides bindings for React through [react-galena](https://www.npmjs.com/package/@figliolia/react-galena). This package provides factories for generating HOC's and hooks from your Galena instances and units of State!
 
 #### Demo Application
 To see some basic usage using Galena with React, please check out this [Example App](https://github.com/alexfigliolia/galena-quick-start)
