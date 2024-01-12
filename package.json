@@ -1,9 +1,17 @@
 {
   "name": "@figliolia/galena",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "description": "A performant state management library supporting mutable state, batched updates, middleware and a rich development API",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/mjs/index.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/mjs/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
   "files": [
     "dist",
     "src/*"
@@ -30,13 +38,14 @@
   "scripts": {
     "test": "jest",
     "coverage": "jest --env=jsdom --coverage --testResultsProcessor ./node_modules/jest-junit",
-    "build": "rm -rf dist && tsc --project tsconfig.build.json && tsc-alias -p tsconfig.build.json",
+    "build": "npx ts-packager -e src",
     "lint": "tsc --noemit && eslint ./ --fix"
   },
   "dependencies": {
     "@figliolia/event-emitter": "^1.0.8"
   },
   "devDependencies": {
+    "@figliolia/ts-packager": "^1.0.3",
     "@types/node": "^16.7.13",
     "@typescript-eslint/eslint-plugin": "^5.59.1",
     "@typescript-eslint/parser": "^5.59.1",
