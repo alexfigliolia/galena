@@ -1,8 +1,8 @@
 import { MiddlewareEvents } from "Middleware/types";
 import type { Middleware } from "Middleware/Middleware";
 import { EventEmitter } from "@figliolia/event-emitter";
-import { Priority, type MutationEvent } from "./types";
 import { Scheduler } from "./Scheduler";
+import { Priority, type MutationEvent } from "./types";
 
 /**
  * ### State

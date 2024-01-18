@@ -1,7 +1,5 @@
 import { AutoIncrementingID } from "@figliolia/event-emitter";
-
 import type { Middleware } from "Middleware/Middleware";
-
 import { State } from "Galena/State";
 import { Guards } from "./Guards";
 
@@ -84,13 +82,14 @@ export class Galena<
    * state will automatically receive updates when your new unit of
    * state updates
    */
-  public composeState<S extends any, M extends typeof State<S>>(
+  public composeState<S extends Record<string, any>, M extends typeof State<S>>(
     name: string,
     initialState: S,
-    Model = State<S>
+    Model?: M
   ) {
     this.guardDuplicateStates(name, this.state);
-    const state = new Model(name, initialState);
+    const StateModel = Model || State<S>;
+    const state = new StateModel(name, initialState);
     state.registerMiddleware(...this.middleware);
     this.mutable[name] = state;
     this.reIndexSubscriptions(name);
