@@ -11,3 +11,7 @@ export enum Priority {
 }
 
 export type Task = () => void;
+
+export type SubscriptionTuple = [state: string, ID: string];
+
+export type Subscription<T> = (nextState: T) => void | Promise<void>;

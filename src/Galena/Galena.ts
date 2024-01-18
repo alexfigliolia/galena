@@ -2,6 +2,7 @@ import { AutoIncrementingID } from "@figliolia/event-emitter";
 import type { Middleware } from "Middleware/Middleware";
 import { State } from "Galena/State";
 import { Guards } from "./Guards";
+import type { Subscription, SubscriptionTuple } from "./types";
 
 /**
  * ## Galena
@@ -62,12 +63,9 @@ export class Galena<
   T extends Record<string, State<any>> = Record<string, State<any>>
 > extends Guards {
   public readonly state = {} as T;
-  private readonly subscriptions = new Map<
-    string,
-    [state: string, ID: string][]
-  >();
   private readonly middleware: Middleware[] = [];
   private readonly IDs = new AutoIncrementingID();
+  private readonly subscriptions = new Map<string, SubscriptionTuple[]>();
   constructor(middleware: Middleware[] = []) {
     super();
     this.middleware = middleware;
@@ -200,13 +198,13 @@ export class Galena<
    * subscription, call `Galena.unsubscribeAll()` with the ID
    * returned
    */
-  public subscribeAll(callback: (nextState: T) => void) {
+  public subscribeAll(callback: Subscription<T>) {
     const stateSubscriptions: [state: string, ID: string][] = [];
     for (const key in this.state) {
       stateSubscriptions.push([
         key,
         this.state[key].subscribe(() => {
-          callback(this.state);
+          void callback(this.state);
         }),
       ]);
     }
@@ -226,8 +224,8 @@ export class Galena<
     if (IDs) {
       for (const [state, ID] of IDs) {
         this.state[state].unsubscribe(ID);
-        this.subscriptions.delete(ID);
       }
+      this.subscriptions.delete(ID);
     }
   }
 
@@ -241,20 +239,12 @@ export class Galena<
    */
   private reIndexSubscriptions(name: string) {
     for (const [ID, unitSubscriptions] of this.subscriptions) {
-      for (const [state, subscriptionID] of unitSubscriptions) {
-        const callback = this.state[state]["emitter"]
-          .get(state)
-          ?.get(subscriptionID);
-        if (callback) {
-          unitSubscriptions.push([
-            name,
-            this.state[name].subscribe(() => {
-              void callback(this.state);
-            }),
-          ]);
-          this.subscriptions.set(ID, unitSubscriptions);
-          break;
-        }
+      const [state, listenerID] = unitSubscriptions[0];
+      const subscriptions = this.state[state]["emitter"].get(state);
+      const listener = subscriptions?.get(listenerID);
+      if (listener) {
+        unitSubscriptions.push([name, this.state[name].subscribe(listener)]);
+        this.subscriptions.set(ID, unitSubscriptions);
       }
     }
   }

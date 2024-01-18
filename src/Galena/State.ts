@@ -2,6 +2,7 @@ import { MiddlewareEvents } from "Middleware/types";
 import type { Middleware } from "Middleware/Middleware";
 import { EventEmitter } from "@figliolia/event-emitter";
 import { Scheduler } from "./Scheduler";
+import type { Subscription } from "./types";
 import { Priority, type MutationEvent } from "./types";
 
 /**
@@ -260,7 +261,7 @@ export class State<T extends any = any> extends Scheduler {
    * callback you provide will execute each time state changes.
    * Returns a unique identifier for your subscription
    */
-  public subscribe(callback: (nextState: T) => void) {
+  public subscribe(callback: Subscription<T>) {
     return this.emitter.on(this.name, callback);
   }
 
