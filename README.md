@@ -346,6 +346,8 @@ import { Galena, Logger } from "@figliolia/galena";
 const AppState = new Galena([new Logger()]);
 ```
 
+![Logs](images/Logging.png)
+
 #### Profiling Middleware
 Galena also comes with a Profiler that can track the duration of all state transitions. When a state transition exceeds 16ms, a warning is printed to the console notifying the developer of a potential bottleneck in his or her application. By default the Profiler will log each time a state transition exceeds one full frame (16ms). This threshold can be adjusted by calling `new Profiler(/* any number of milliseconds */)`
 
@@ -354,6 +356,8 @@ import { Galena, Profiler } from "@figliolia/galena";
 
 const AppState = new Galena([new Profiler()]);
 ```
+
+![Profiles](images/Profiling.png)
 
 ### Middleware - Advanced Usage
 Similar to a lot of stateful tools, `Galena` also exposes an API for creating your own Middleware. With it, you can do a lot of cool things for both development and productions environments. Let's first look at how to use middleware in `Galena`, then we'll walk through creating our own!
