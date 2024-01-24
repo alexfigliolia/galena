@@ -30,7 +30,10 @@ export class Profiler extends Middleware {
       const endTime = performance.now();
       const diff = endTime - this.startTime;
       if (diff > this.threshold) {
-        console.warn("Slow state transition detected", nextState);
+        console.warn(
+          `A slow state transition was detected on ${nextState.name}`,
+          nextState
+        );
         console.warn(`The last transition took ${diff}ms`);
       }
     }
