@@ -276,6 +276,15 @@ export class State<T extends any = any> extends Scheduler {
   }
 
   /**
+   * Clear All Subscriptions
+   *
+   * Removes all open subscriptions to the `State` instance
+   */
+  public clearAllSubscriptions() {
+    return this.emitter.clear();
+  }
+
+  /**
    * Life Cycle Event
    *
    * Triggers a life cycle event for each registered middleware
