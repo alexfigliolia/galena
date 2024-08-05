@@ -46,10 +46,10 @@
   resolved "https://registry.yarnpkg.com/@figliolia/child-process/-/child-process-1.0.2.tgz#956dd934577adcf99c09ff27f247589dfc2ae0fc"
   integrity sha512-2u2k+T0IOmdaITCezej6F4bIomGAYpBwImxNeq4hYUGWizyt4ai/OdKEp6BrS0FKMZZ79lOIZ0yRtEmE45c3fg==
 
-"@figliolia/event-emitter@^1.0.8":
-  version "1.0.8"
-  resolved "https://registry.yarnpkg.com/@figliolia/event-emitter/-/event-emitter-1.0.8.tgz#5592433d97e3b250cdb691afb040e59b88d77bde"
-  integrity sha512-U0VNMaDbYgbEcPPWSOR+EwpGPx4t3DX+Y7s1EM1ubylm8pJIcYPxfKETP00OpDl8D+Lrqa0Bkmxtm+EhOFrtCA==
+"@figliolia/event-emitter@^1.1.4":
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/@figliolia/event-emitter/-/event-emitter-1.1.4.tgz#c4377c808ee7e4a19dfe37d8a0277b7f9a763467"
+  integrity sha512-0UmkV2yY2h+HEYY96FbEYMumNK8A9XNqwWtA4r7wgnyjbQ7ehtRS38+bMO2+5sdbnibRIbZYC1U4hgnjb701cA==
 
 "@figliolia/ts-packager@^1.0.3":
   version "1.0.3"

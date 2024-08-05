@@ -1,6 +1,6 @@
 {
   "name": "@figliolia/galena",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "description": "A performant state management library supporting mutable state, batched updates, middleware and a rich development API",
   "main": "dist/cjs/index.js",
   "module": "dist/mjs/index.js",
@@ -41,10 +41,11 @@
     "build": "npx ts-packager -e src",
     "lint": "tsc --noemit && eslint ./ --fix"
   },
-  "dependencies": {
+  "peerDependencies": {
     "@figliolia/event-emitter": "^1.1.4"
   },
   "devDependencies": {
+    "@figliolia/event-emitter": "^1.1.4",
     "@figliolia/ts-packager": "^1.0.3",
     "@types/node": "^16.7.13",
     "@typescript-eslint/eslint-plugin": "^5.59.1",
