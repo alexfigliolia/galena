@@ -242,7 +242,7 @@ export class Galena<
       const [stateName, listenerID] = unitSubscriptions[0];
       const subscriptions =
         this.state[stateName]["emitter"].storage.get(stateName);
-      const listener = subscriptions?.storage?.get(listenerID);
+      const listener = subscriptions?.storage?.get?.(listenerID);
       if (listener) {
         unitSubscriptions.push([name, this.state[name].subscribe(listener)]);
         this.subscriptions.set(ID, unitSubscriptions);

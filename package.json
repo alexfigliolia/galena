@@ -1,6 +1,6 @@
 {
   "name": "@figliolia/galena",
-  "version": "2.3.4",
+  "version": "2.3.5",
   "description": "A performant state management library supporting mutable state, batched updates, middleware and a rich development API",
   "main": "dist/cjs/index.js",
   "module": "dist/mjs/index.js",
