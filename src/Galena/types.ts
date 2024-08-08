@@ -1,3 +1,4 @@
+import type { Callback } from "@figliolia/event-emitter";
 import type { State } from "./State";
 
 export type MutationEvent<T extends any> = {
@@ -14,4 +15,4 @@ export type Task = () => void;
 
 export type SubscriptionTuple = [state: string, ID: string];
 
-export type Subscription<T> = (nextState: T) => void | Promise<void>;
+export type Subscription<T> = Callback<[nextState: T]>;

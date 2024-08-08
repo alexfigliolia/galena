@@ -307,18 +307,38 @@ export class State<T extends any = any> extends Scheduler {
    * initial value
    */
   public static clone<T>(state: T): T {
-    if (Array.isArray(state)) {
-      return [...state] as T;
+    switch (typeof state) {
+      case "string":
+        return String(state) as T;
+      case "bigint":
+        return BigInt(state) as T;
+      case "boolean":
+        return Boolean(state) as T;
+      case "number":
+        return Number(state) as T;
+      case "symbol":
+      case "function":
+        return state;
+      case "undefined":
+        return undefined as T;
+      case "object":
+      default:
+        if (!state) {
+          return null as T;
+        }
+        if (Array.isArray(state)) {
+          return [...state] as T;
+        }
+        if (state instanceof Set) {
+          return new Set(state) as T;
+        }
+        if (state instanceof Map) {
+          return new Map(state) as T;
+        }
+        if (state && typeof state === "object") {
+          return { ...state } as T;
+        }
+        return state;
     }
-    if (state instanceof Set) {
-      return new Set(state) as T;
-    }
-    if (state instanceof Map) {
-      return new Map(state) as T;
-    }
-    if (state && typeof state === "object") {
-      return { ...state } as T;
-    }
-    return state;
   }
 }
