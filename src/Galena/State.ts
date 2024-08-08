@@ -1,9 +1,9 @@
-import { MiddlewareEvents } from "Middleware/types";
-import type { Middleware } from "Middleware/Middleware";
 import { EventEmitter } from "@figliolia/event-emitter";
+import type { Middleware } from "Middleware/Middleware";
+import { MiddlewareEvents } from "Middleware/types";
 import { Scheduler } from "./Scheduler";
-import type { Subscription } from "./types";
-import { Priority, type MutationEvent } from "./types";
+import type { MutationEvent, Subscription } from "./types";
+import { Priority } from "./types";
 
 /**
  * ### State
@@ -109,7 +109,7 @@ export class State<T extends any = any> extends Scheduler {
     (func: (state: T, initialState: T) => void | Promise<void>) => {
       return func(this.state, this.initialState);
     },
-    Priority.BATCHED
+    Priority.BATCHED,
   );
 
   /**
@@ -139,7 +139,7 @@ export class State<T extends any = any> extends Scheduler {
     (func: (state: T, initialState: T) => void | Promise<void>) => {
       return func(this.state, this.initialState);
     },
-    Priority.MICROTASK
+    Priority.MICROTASK,
   );
 
   /**
@@ -171,7 +171,7 @@ export class State<T extends any = any> extends Scheduler {
     (func: (state: T, initialState: T) => void | Promise<void>) => {
       return func(this.state, this.initialState);
     },
-    Priority.IMMEDIATE
+    Priority.IMMEDIATE,
   );
 
   /**
@@ -214,13 +214,13 @@ export class State<T extends any = any> extends Scheduler {
    */
   protected mutation<F extends (...args: any[]) => any>(
     func: F,
-    priority: Priority = Priority.BATCHED
+    priority: Priority = Priority.BATCHED,
   ) {
     return (...args: Parameters<F>) => {
       this.lifeCycleEvent(MiddlewareEvents.onBeforeUpdate);
       const returnValue = func(...args);
       if (returnValue instanceof Promise) {
-        return returnValue.then((v) => {
+        return returnValue.then(v => {
           this.scheduleUpdate(priority);
           return v;
         });
@@ -240,7 +240,7 @@ export class State<T extends any = any> extends Scheduler {
     this.lifeCycleEvent(MiddlewareEvents.onUpdate);
     void this.scheduleTask(
       () => this.emitter.emit(this.name, this.state),
-      priority
+      priority,
     );
   }
 
@@ -281,7 +281,7 @@ export class State<T extends any = any> extends Scheduler {
    * Removes all open subscriptions to the `State` instance
    */
   public clearAllSubscriptions() {
-    return this.emitter.clear();
+    return this.emitter.storage.clear();
   }
 
   /**

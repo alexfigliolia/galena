@@ -32,7 +32,7 @@ export class Profiler extends Middleware {
       if (diff > this.threshold) {
         console.warn(
           `A slow state transition was detected on ${nextState.name}`,
-          nextState.getState()
+          nextState.getState(),
         );
         console.warn(`The last transition took ${diff}ms`);
       }

@@ -28,17 +28,17 @@ export class Logger extends Middleware {
       "color: rgb(187, 186, 186); font-weight: bold",
       state.name,
       "@",
-      this.time
+      this.time,
     );
     console.log(
       "   %cPrevious State",
       "color: #26ad65; font-weight: bold",
-      this.previousState
+      this.previousState,
     );
     console.log(
       "   %cNext State    ",
       "color: rgb(17, 118, 249); font-weight: bold",
-      state.getState()
+      state.getState(),
     );
     this.previousState = null;
   }

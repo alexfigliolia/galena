@@ -34,12 +34,12 @@ export class Middleware<T extends any = any> {
    *
    * An event emitted each time a `State` mutation is enqueued
    */
-  public onBeforeUpdate(state: State<T>) {}
+  public onBeforeUpdate(_state: State<T>) {}
 
   /**
    * On Update
    *
    * An event emitted each time a `State` instance is mutated
    */
-  public onUpdate(state: State<T>) {}
+  public onUpdate(_state: State<T>) {}
 }

@@ -1,6 +1,6 @@
 import { AutoIncrementingID } from "@figliolia/event-emitter";
-import type { Middleware } from "Middleware/Middleware";
 import { State } from "Galena/State";
+import type { Middleware } from "Middleware/Middleware";
 import { Guards } from "./Guards";
 import type { Subscription, SubscriptionTuple } from "./types";
 
@@ -60,7 +60,7 @@ import type { Subscription, SubscriptionTuple } from "./types";
  * ```
  */
 export class Galena<
-  T extends Record<string, State<any>> = Record<string, State<any>>
+  T extends Record<string, State<any>> = Record<string, State<any>>,
 > extends Guards {
   public readonly state = {} as T;
   private readonly middleware: Middleware[] = [];
@@ -83,7 +83,7 @@ export class Galena<
   public composeState<S extends Record<string, any>, M extends typeof State<S>>(
     name: string,
     initialState: S,
-    Model?: M
+    Model?: M,
   ) {
     this.guardDuplicateStates(name, this.state);
     const StateModel = Model || State<S>;
@@ -129,7 +129,7 @@ export class Galena<
    */
   public update<K extends Extract<keyof T, string>>(
     name: K,
-    mutation: Parameters<T[K]["update"]>["0"]
+    mutation: Parameters<T[K]["update"]>["0"],
   ) {
     return this.get(name).update(mutation);
   }
@@ -142,7 +142,7 @@ export class Galena<
    */
   public backgroundUpdate<K extends Extract<keyof T, string>>(
     name: K,
-    mutation: Parameters<T[K]["backgroundUpdate"]>["0"]
+    mutation: Parameters<T[K]["backgroundUpdate"]>["0"],
   ) {
     return this.get(name).backgroundUpdate(mutation);
   }
@@ -155,7 +155,7 @@ export class Galena<
    */
   public priorityUpdate<K extends Extract<keyof T, string>>(
     name: K,
-    mutation: Parameters<T[K]["priorityUpdate"]>["0"]
+    mutation: Parameters<T[K]["priorityUpdate"]>["0"],
   ) {
     return this.get(name).priorityUpdate(mutation);
   }
@@ -172,7 +172,7 @@ export class Galena<
    */
   public subscribe<K extends Extract<keyof T, string>>(
     name: K,
-    callback: Parameters<T[K]["subscribe"]>["0"]
+    callback: Parameters<T[K]["subscribe"]>["0"],
   ) {
     return this.get(name).subscribe(callback);
   }
@@ -239,9 +239,10 @@ export class Galena<
    */
   private reIndexSubscriptions(name: string) {
     for (const [ID, unitSubscriptions] of this.subscriptions) {
-      const [state, listenerID] = unitSubscriptions[0];
-      const subscriptions = this.state[state]["emitter"].get(state);
-      const listener = subscriptions?.get(listenerID);
+      const [stateName, listenerID] = unitSubscriptions[0];
+      const subscriptions =
+        this.state[stateName]["emitter"].storage.get(stateName);
+      const listener = subscriptions?.storage?.get(listenerID);
       if (listener) {
         unitSubscriptions.push([name, this.state[name].subscribe(listener)]);
         this.subscriptions.set(ID, unitSubscriptions);

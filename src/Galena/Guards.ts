@@ -20,11 +20,11 @@ export class Guards {
    */
   protected warnForUndefinedStates<T extends Record<string, State<any>>>(
     name: string,
-    state: T
+    state: T,
   ) {
     if (!(name in state)) {
       console.warn(
-        `A unit of state with the name "${name}" does not yet exist on this Galena instance. If this is expected, you can ignore this warning`
+        `A unit of state with the name "${name}" does not yet exist on this Galena instance. If this is expected, you can ignore this warning`,
       );
     }
   }
@@ -38,11 +38,11 @@ export class Guards {
    */
   protected guardDuplicateStates<T extends Record<string, State<any>>>(
     name: string,
-    state: T
+    state: T,
   ) {
     if (name in state) {
       console.warn(
-        `A unit of state with the name "${name}" already exists on this Galena instance. Please re-name this new unit of state to something unique`
+        `A unit of state with the name "${name}" already exists on this Galena instance. Please re-name this new unit of state to something unique`,
       );
     }
   }
