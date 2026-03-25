@@ -44,7 +44,7 @@
     "oxlint": "^1.36.0",
     "oxlint-tsgolint": "^0.17.0",
     "tsdown": "^0.21.1",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.2"
   },
   "peerDependencies": {
     "@figliolia/event-emitter": ">=1.2.0"
