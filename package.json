@@ -1,0 +1,52 @@
+{
+  "name": "@figliolia/galena",
+  "version": "3.0.0",
+  "description": "A performant state management library supporting middleware and a rich developer API",
+  "homepage": "https://github.com/alexfigliolia/galena#readme",
+  "license": "MIT",
+  "author": "Alex Figliolia",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexfigliolia/galena.git"
+  },
+  "files": [
+    "dist",
+    "src",
+    "media"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "lint": "oxlint --type-aware --type-check --report-unused-disable-directives --fix && oxfmt"
+  },
+  "devDependencies": {
+    "@figliolia/event-emitter": "^1.2.0",
+    "@typescript-eslint/eslint-plugin": "^8.57.0",
+    "@typescript-eslint/parser": "^8.57.0",
+    "eslint": "^10.0.3",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "eslint-plugin-unused-imports": "^4.4.1",
+    "oxfmt": "^0.42.0",
+    "oxlint": "^1.36.0",
+    "oxlint-tsgolint": "^0.17.0",
+    "tsdown": "^0.21.1",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "@figliolia/event-emitter": ">=1.2.0"
+  }
+}
