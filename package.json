@@ -1,6 +1,6 @@
 {
   "name": "@figliolia/galena",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "A performant state management library supporting middleware and a rich developer API",
   "homepage": "https://github.com/alexfigliolia/galena#readme",
   "license": "MIT",
@@ -48,5 +48,11 @@
   },
   "peerDependencies": {
     "@figliolia/event-emitter": ">=1.2.0"
-  }
+  },
+  "keywords": [
+    "state",
+    "state management",
+    "flux",
+    "react"
+  ]
 }
