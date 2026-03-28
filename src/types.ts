@@ -27,4 +27,8 @@ export type StateTypes<T extends Record<string, State<any>>> = ReturnType<
   StateType<T[keyof T]>
 >;
 
-export type StateType<T extends State<any>> = ReturnType<T["getSnapshot"]>;
+export type StateType<T extends State<any>> = ReturnType<T["getState"]>;
+
+export type GalenaState<T extends Record<string, State<any>>> = {
+  [K in keyof T]: StateType<T[K]>;
+};

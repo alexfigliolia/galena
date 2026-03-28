@@ -22,7 +22,7 @@ export class Logger<T = any> extends Middleware {
   private previousState: T | null = null;
 
   override onBeforeUpdate(state: State<T>) {
-    this.previousState = state.getSnapshot();
+    this.previousState = state.getState();
   }
 
   override onUpdate(state: State<T>) {
@@ -40,7 +40,7 @@ export class Logger<T = any> extends Middleware {
     console.log(
       "   %cNext State    ",
       "color: rgb(17, 118, 249); font-weight: bold",
-      state.getSnapshot(),
+      state.getState(),
     );
   }
 

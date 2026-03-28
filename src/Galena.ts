@@ -1,9 +1,11 @@
 import { EventEmitter } from "@figliolia/event-emitter";
+import { API } from "./API";
 import type { Middleware } from "./Middleware";
 import type { State } from "./State";
 import type {
   AppSubscriber,
   GalenaSnapshot,
+  GalenaState,
   Setter,
   StateType,
   StateTypes,
@@ -29,22 +31,44 @@ import type {
  * }, ...middleware);
  *
  * // to retreive and work with an individual unit
- * const myUnit = AppState.get("<key>"); // Returns State<T>
+ * const userState = AppState.get("user"); // Returns State<T>
  *
  * // to run a callback anytime a unit of state changes
  * const listener = AppState.subscribe(({ state, updated }) => {
  *   // do something with the `State` instance that updated
  *   // the entirety of your state
  * });
+ *
+ * // get the current application state
+ * const currentState = AppState.getState();
+ *
+ * // operate on an instance of state
+ * AppState.update("user", userState => ({
+ *   ...userState,
+ *   // your updates
+ * }));
  * ```
  */
-export class Galena<T extends Record<string, State<any>>> {
+export class Galena<T extends Record<string, State<any>>> extends API<
+  GalenaState<T>,
+  GalenaSnapshot<T>,
+  StateTypes<T>
+> {
   private Emitter = new EventEmitter<{ change: GalenaSnapshot<T> }>();
   constructor(
     public readonly state: T,
     ...middleware: Middleware<StateTypes<T>>[]
   ) {
-    this.registerMiddleware(...middleware);
+    super(...middleware);
+  }
+
+  public getState() {
+    const result = {} as GalenaState<T>;
+    for (const key in this.state) {
+      const state = key as keyof T;
+      result[state] = this.state[key].getState();
+    }
+    return result;
   }
 
   /**
@@ -149,13 +173,22 @@ export class Galena<T extends Record<string, State<any>>> {
  * }, ...middleware);
  *
  * // to retreive and work with an individual unit
- * const myUnit = AppState.get("<key>"); // Returns State<T>
+ * const userState = AppState.get("user"); // Returns State<T>
  *
  * // to run a callback anytime a unit of state changes
  * const listener = AppState.subscribe(({ state, updated }) => {
  *   // do something with the `State` instance that updated
  *   // the entirety of your state
  * });
+ *
+ * // get the current application state
+ * const currentState = AppState.getState();
+ *
+ * // operate on an instance of state
+ * AppState.update("user", userState => ({
+ *   ...userState,
+ *   // your updates
+ * }));
  * ```
  */
 export const createGalena = <T extends Record<string, State<any>>>(

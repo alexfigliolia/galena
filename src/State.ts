@@ -1,4 +1,5 @@
 import { EventEmitter } from "@figliolia/event-emitter";
+import { API } from "./API";
 import type { Middleware } from "./Middleware";
 import type { NonFunction, Setter, Subscriber } from "./types";
 
@@ -9,11 +10,11 @@ import type { NonFunction, Setter, Subscriber } from "./types";
  * as isolated instances or be part of your global app
  * state (via `Galena` instances).
  *
- * There are three ways to create state instances
+ * There are two ways to create state instances
  *
  * ```typescript
  * import { State, createState, Profiler } from "@figliolia/galena";
- * // for island states that can be shared between react components
+ 
  * const myState = new State("<any value>", ...middleware);
  * // or
  * const myState = createState("<any value>", ...middleware);
@@ -23,18 +24,19 @@ import type { NonFunction, Setter, Subscriber } from "./types";
  * myState.subscribe(nextValue => {});
  * myState.registerMiddleware(new Profiler());
  * myState.reset(); // reset back to it's original value
+ * // to get the current value at any point in time
+ * const currentValue = myState.getState();
  * ```
  */
-export class State<T> {
+export class State<T> extends API<T, NonFunction<T>> {
   private state: NonFunction<T>;
-  public readonly middleware: Middleware<T>[] = [];
   private readonly Emitter = new EventEmitter<{ change: NonFunction<T> }>();
   constructor(
     public readonly initialState: NonFunction<T>,
     ...middleware: Middleware<T>[]
   ) {
+    super(...middleware);
     this.state = initialState;
-    this.registerMiddleware(...middleware);
   }
 
   /**
@@ -73,7 +75,7 @@ export class State<T> {
    * Returns the current state. Designed for compatibility with
    * `useSyncExternalStore`
    */
-  public readonly getSnapshot = () => {
+  public readonly getState = () => {
     return this.state;
   };
 
@@ -139,11 +141,11 @@ export class State<T> {
  * as isolated instances or be part of your global app
  * state (via `Galena` instances).
  *
- * There are three ways to create state instances
+ * There are two ways to create state instances
  *
  * ```typescript
  * import { State, createState, Profiler } from "@figliolia/galena";
- * // for island states that can be shared between react components
+ 
  * const myState = new State("<any value>", ...middleware);
  * // or
  * const myState = createState("<any value>", ...middleware);
@@ -153,6 +155,8 @@ export class State<T> {
  * myState.subscribe(nextValue => {});
  * myState.registerMiddleware(new Profiler());
  * myState.reset(); // reset back to it's original value
+ * // to get the current value at any point in time
+ * const currentValue = myState.getState();
  * ```
  */
 export function createState<T>(

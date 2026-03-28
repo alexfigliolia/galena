@@ -19,7 +19,7 @@ import type { State } from "./State";
  *
  *   public override onBeforeUpdate(state: State<T>) {
  *     this.startTime = performance.now();
- *     this.previousState = state.getSnapshot();
+ *     this.previousState = state.getState();
  *   }
  *
  *   public override onUpdate(state: T) {
@@ -27,7 +27,7 @@ import type { State } from "./State";
  *     if(diff >= this.threshold) {
  *       console.warn(`A slow state transition was detected when transitioning the following piece of state`);
  *       console.log('Previous state', this.previousState);
- *       console.log('Current state', state.getSnapshot());
+ *       console.log('Current state', state.getState());
  *     }
  *   }
  * }
