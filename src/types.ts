@@ -24,5 +24,7 @@ export type AppSubscriber<
 > = ((payload: GalenaSnapshot<T, K>) => void) | (() => void);
 
 export type StateTypes<T extends Record<string, State<any>>> = ReturnType<
-  T[keyof T]["getSnapshot"]
+  StateType<T[keyof T]>
 >;
+
+export type StateType<T extends State<any>> = ReturnType<T["getSnapshot"]>;

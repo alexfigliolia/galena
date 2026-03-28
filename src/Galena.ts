@@ -1,27 +1,30 @@
 import { EventEmitter } from "@figliolia/event-emitter";
 import type { Middleware } from "./Middleware";
 import type { State } from "./State";
-import type { AppSubscriber, GalenaSnapshot, StateTypes } from "./types";
+import type {
+  AppSubscriber,
+  GalenaSnapshot,
+  Setter,
+  StateType,
+  StateTypes,
+} from "./types";
 
 /**
- * Galena
+ * ### Galena
  *
- * Galena is designed to house one or more units of `State`
+ * Galena instances are designed to house one or more units of `State`
  * and exist as a pseudo global application state.
  *
  * By design, each of its `State` units have isolated reactivity
  * that prevents entire state trees from updating when a single
  * unit changes.
  *
- * This is dissimilar to redux-like models where downstream reconciliations
- * will propagate everwhere a given store is read from. In galena, downstream
- * reconciliations occur only for consumers of the slice of state that
- * changed - making it safer to use with more frequent state changes.
- *
  * ```typescript
  * import { Galena } from "@figliolia/galena";
  *
  * const AppState = new Galena({
+ *   user: new State("<user-stuff>"),
+ *   business: new State("<business-logic-stuff>")
  *   // your reactive instances
  * }, ...middleware);
  *
@@ -29,8 +32,9 @@ import type { AppSubscriber, GalenaSnapshot, StateTypes } from "./types";
  * const myUnit = AppState.get("<key>"); // Returns State<T>
  *
  * // to run a callback anytime a unit of state changes
- * const unsubscribe = AppState.subscribe(({ updated }) => {
+ * const listener = AppState.subscribe(({ state, updated }) => {
  *   // do something with the `State` instance that updated
+ *   // the entirety of your state
  * });
  * ```
  */
@@ -43,10 +47,47 @@ export class Galena<T extends Record<string, State<any>>> {
     this.registerMiddleware(...middleware);
   }
 
+  /**
+   * Get
+   *
+   * Returns a connected State instance by key
+   */
   public get<K extends Extract<keyof T, string>>(key: K) {
     return this.state[key];
   }
 
+  /**
+   * Set
+   *
+   * Sets a connected State instance's state by key
+   */
+  public set<K extends Extract<keyof T, string>>(
+    key: K,
+    value: StateType<T[K]>,
+  ) {
+    return this.get(key).set(value);
+  }
+
+  /**
+   * Update
+   *
+   * Invokes a connected State instance's update method key
+   */
+  public update<K extends Extract<keyof T, string>>(
+    key: K,
+    updater: Setter<StateType<T[K]>>,
+  ) {
+    return this.get(key).update(updater);
+  }
+
+  /**
+   * Subscribe
+   *
+   * Listen for changes on your Galena instnace. Your provided
+   * callback will be invoked each time an attached state instance
+   * changes. To your callback will be provided the `updated` state
+   * instance, along with the entire `state` tree
+   */
   public subscribe = (subscriber: AppSubscriber<T>) => {
     const ID = this.Emitter.on("change", subscriber);
     const unsubscribers: (() => void)[] = [];
@@ -69,6 +110,12 @@ export class Galena<T extends Record<string, State<any>>> {
     };
   };
 
+  /**
+   * Register Middleware
+   *
+   * Adds middleware instances to each of the connected
+   * `State` instances
+   */
   public registerMiddleware(...middlewares: Middleware<StateTypes<T>>[]) {
     for (const key in this.state) {
       this.state[key]?.registerMiddleware?.(...middlewares);
@@ -83,24 +130,21 @@ export class Galena<T extends Record<string, State<any>>> {
 }
 
 /**
- * Create Galena
+ * ### createGalena
  *
- * Galena is designed to house one or more units of `State`
+ * Galena instances are designed to house one or more units of `State`
  * and exist as a pseudo global application state.
  *
  * By design, each of its `State` units have isolated reactivity
  * that prevents entire state trees from updating when a single
  * unit changes.
  *
- * This is dissimilar to redux-like models where downstream reconciliations
- * will propagate everwhere a given store is read from. In galena, downstream
- * reconciliations occur only for consumers of the slice of state that
- * changed - making it safer to use with more frequent state changes.
- *
  * ```typescript
- * import { createGalena } from "@figliolia/galena";
+ * import { Galena } from "@figliolia/galena";
  *
- * const AppState = createGalena({
+ * const AppState = new Galena({
+ *   user: new State("<user-stuff>"),
+ *   business: new State("<business-logic-stuff>")
  *   // your reactive instances
  * }, ...middleware);
  *
@@ -108,8 +152,9 @@ export class Galena<T extends Record<string, State<any>>> {
  * const myUnit = AppState.get("<key>"); // Returns State<T>
  *
  * // to run a callback anytime a unit of state changes
- * const unsubscribe = AppState.subscribe(({ updated }) => {
+ * const listener = AppState.subscribe(({ state, updated }) => {
  *   // do something with the `State` instance that updated
+ *   // the entirety of your state
  * });
  * ```
  */

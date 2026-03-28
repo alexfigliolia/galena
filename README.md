@@ -2,9 +2,26 @@
 
 Lightning fast, framework agnostic state, that doesn't glue your state operations to your UI components!
 
-Galena was originally designed to manage game state in TypeScript application with over 1000 stateful values. Existing state management utilities such as Zustand and Redux became cumbersome when modeling a huge amount of state and operations.
+## Basic Usage
 
-With Redux, the action-driven model became a juggling act of action names and tracing changes between them. With Zustand, the `create()` function felt limiting in the usage of JavaScript language constructs. It also lacked a construct for global application state.
+```typescript
+import { State, createState } from "@figliolia/galena";
+
+const myState = new State(/* any value */);
+// or
+const myState = createState(/* any value */);
+
+const currentValue = myState.getSnapshot();
+const subscriber = myState.subscribe(nextValue => {});
+myState.set(/* new value */);
+myState.update(previousValue => /* new value */);
+
+// to reset state back to its original value
+myState.reset();
+
+// to unregister the subscription
+subscriber();
+```
 
 ## Installation
 
@@ -18,19 +35,19 @@ npm i @figliolia/react-galena
 
 ### The State Model
 
-The instancable `State` object in Galena is easy to get started with and setup. It's effectively reactive wrapper around any value passed into it.
+The instancable `State` object in Galena is a reactive wrapper around any value. You can use it to apply reactivity to large objects or simple values
 
 ```typescript
 import { State } from "@figliolia/galena";
 
 const MyState = new State(/* any value */, /* middleware */);
 
-const subscription = MyState.subscribe(value => {
+const subscriber = MyState.subscribe(value => {
   // do something with changed values
 });
 
 // to unsubscribe
-subscription();
+subscriber();
 
 MyState.set(/* new value */);
 MyState.update(previousValue => /* new value */);
@@ -41,7 +58,9 @@ Instances of `State` are ultimately what compose all reactivity in Galena. They 
 
 ### The Galena Model
 
-Creating Global application state(s) in Galena is simple. They are effectively just connected instances of your `State`'s.
+`Galena` objects are designed to "link" multiple instances of `State` together to create a "global" application state.
+
+To use it simply define your `State`'s and pass them to a `Galena` instance
 
 ```typescript
 import { Galena, State } from "@figliolia/galena";
@@ -55,16 +74,14 @@ const AppState = new Galena(
     user: new State({
       userID: "<id>",
       membershipTier: "free",
-      friends: ["<id1>", "<id2>"],
+      friends: ["<id-1>", "<id-2>"],
     }),
     // ...and so on
   } /* middleware */,
 );
-```
 
-From here, operations on any slice of state are type-aware and operable via a single construct:
-
-```typescript
+// From here, operations on any slice of state are type-aware
+// and operable via a single construct:
 const subscriber = AppState.subscribe(
   ({
     state, // The entire state object at the time of change
@@ -75,23 +92,19 @@ const subscriber = AppState.subscribe(
 );
 
 // to unsubscribe
-subscription();
+subscriber();
 
+// to access an instance of state
+const UserState = AppState.get("user");
 // to operate
-AppState.get("user").update(state => ({
-  ...state,
-  friends: [...state.friends, "<new-friend-id>"],
-}));
-
-AppState.get("navigation").update(state => ({
-  ...state,
-  navigationMenuOpen: true,
-}));
+UserState.update(state => /* next state */);
+// or
+AppState.update("user", state => /* next state */)
 ```
 
 ### Beyond the Basics
 
-#### Models
+#### Modeling Data with Mutations
 
 `State` in Galena is designed for extension and instancing - a need that ultimately motivated the library's development.
 
@@ -136,42 +149,29 @@ export class MyGameState extends State<IMyGameState> {
 }
 ```
 
-This extension of state, can now be used any number of times throughout your application simply by calling
+These more "robust" state models assist in standardizing a developer API along with your data models. The models you create are also compatible with your your `Galena` instances:
 
 ```typescript
-import { MyGameState } from "./MyGameState";
-
-const player1 = new MyGameState("<playerID>");
-const player2 = new MyGameState("<playerID>");
-```
-
-Each instance has a shared API and defined set of state operations that make for predictable operability
-
-This instances or robust models can also be used on your `Galena` instances
-
-```typescript
-import { Galena, State } from "@figliolia/galena";
+import { Galena } from "@figliolia/galena";
 import { MyGameState } from "./MyGameState";
 
 const MyAppState = new Galena({
-  navigation: new State({
-    currentScreen: "/",
-    navigationMenuOpen: false,
-  }),
   player1: new MyGameState(),
   player2: new MyGameState(),
 });
 
 // Operate
 MyAppState.get("player1").incrementScore(100);
-MyAppState.get("player1").raiseLevel();
+MyAppState.get("player2").raiseLevel();
 ```
 
 ### Middleware
 
-Middleware provides a developer API for building out robust tooling for your state.
+Middleware provides a developer API for building out custom tooling for your state.
 
-Building an registering middleware is simple. Let's build a redux-style logger:
+Building middleware is as simple as extending `Galena`'s `Middleware` class and registering on your state.
+
+Here's a quick example using the redux-like logger provided by this package:
 
 ```typescript
 import { Middleware, type State } from "@figliolia/galena";
@@ -232,7 +232,7 @@ const MyAppState = new Galena({
   // state
 }, new Logger(), new Profiler());
 
-// To apply middleware to a single of `State`
+// To apply middleware to a single piece of `State`
 const MyState = new State(
   /* reactive value */,
   new Logger(),

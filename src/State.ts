@@ -3,7 +3,7 @@ import type { Middleware } from "./Middleware";
 import type { NonFunction, Setter, Subscriber } from "./types";
 
 /**
- * State
+ * ### State
  *
  * The unit of reactivity for Galena. `State`'s can act
  * as isolated instances or be part of your global app
@@ -12,7 +12,7 @@ import type { NonFunction, Setter, Subscriber } from "./types";
  * There are three ways to create state instances
  *
  * ```typescript
- * import { State, createState, useState, Profiler } from "@figliolia/galena";
+ * import { State, createState, Profiler } from "@figliolia/galena";
  * // for island states that can be shared between react components
  * const myState = new State("<any value>", ...middleware);
  * // or
@@ -22,17 +22,7 @@ import type { NonFunction, Setter, Subscriber } from "./types";
  * myState.update(previousValue => "<new-value>");
  * myState.subscribe(nextValue => {});
  * myState.registerMiddleware(new Profiler());
- *
- * // Similarly if you wish to use your state inside a react component
- * const MyComponent = () => {
- *   const [state, setState] = useState(myState);
- *   // or
- *   const [state, setState] = useMyState("<any-value>", ...middlware);
- *
- *   return (
- *      // your jsx
- *   );
- * }
+ * myState.reset(); // reset back to it's original value
  * ```
  */
 export class State<T> {
@@ -143,21 +133,26 @@ export class State<T> {
 }
 
 /**
- * Create State
+ * ### createState
  *
- * Returns the unit of reactivity for Galena. `State`'s can act
+ * The unit of reactivity for Galena. `State`'s can act
  * as isolated instances or be part of your global app
- * state (via `Galena` instances);
+ * state (via `Galena` instances).
+ *
+ * There are three ways to create state instances
  *
  * ```typescript
- * import { createState, Profiler } from "@figliolia/galena";
- *
+ * import { State, createState, Profiler } from "@figliolia/galena";
+ * // for island states that can be shared between react components
+ * const myState = new State("<any value>", ...middleware);
+ * // or
  * const myState = createState("<any value>", ...middleware);
  *
  * myState.set("<new-value>");
  * myState.update(previousValue => "<new-value>");
  * myState.subscribe(nextValue => {});
  * myState.registerMiddleware(new Profiler());
+ * myState.reset(); // reset back to it's original value
  * ```
  */
 export function createState<T>(
