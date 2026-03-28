@@ -2,26 +2,9 @@
 
 Lightning fast, framework agnostic state, that doesn't glue your state operations to your UI components!
 
-## Basic Usage
-
-```typescript
-import { State, createState } from "@figliolia/galena";
-
-const myState = new State(/* any value */);
-// or
-const myState = createState(/* any value */);
-
-const currentValue = myState.getSnapshot();
-const subscriber = myState.subscribe(nextValue => {});
-myState.set(/* new value */);
-myState.update(previousValue => /* new value */);
-
-// to reset state back to its original value
-myState.reset();
-
-// to unregister the subscription
-subscriber();
-```
+[State](#the-state-model)
+[Galena](#the-galena-model)
+[For use with react](#frameworks)
 
 ## Installation
 
@@ -38,20 +21,22 @@ npm i @figliolia/react-galena
 The instancable `State` object in Galena is a reactive wrapper around any value. You can use it to apply reactivity to large objects or simple values
 
 ```typescript
-import { State } from "@figliolia/galena";
+import { State, createState } from "@figliolia/galena";
 
-const MyState = new State(/* any value */, /* middleware */);
+const myState = new State(/* any value */, /* middleware */);
+// or
+const myState = createState(/* any value */, /* middleware */);
 
-const subscriber = MyState.subscribe(value => {
-  // do something with changed values
-});
+const currentValue = myState.getState();
+const subscriber = myState.subscribe(nextValue => {});
+myState.set(/* new value */);
+myState.update(previousValue => /* new value */);
 
-// to unsubscribe
+// to reset state back to its original value
+myState.reset();
+
+// to unregister the subscription
 subscriber();
-
-MyState.set(/* new value */);
-MyState.update(previousValue => /* new value */);
-MyState.reset(); // reset state back to the initial value
 ```
 
 Instances of `State` are ultimately what compose all reactivity in Galena. They can exist as islands compose larger stateful model.
@@ -99,7 +84,10 @@ const UserState = AppState.get("user");
 // to operate
 UserState.update(state => /* next state */);
 // or
-AppState.update("user", state => /* next state */)
+AppState.update("user", state => /* next state */);
+
+// to get the current value of the state tree
+const state = AppState.getState();
 ```
 
 ### Beyond the Basics
@@ -181,7 +169,7 @@ export class Logger<T = any> extends Middleware<T> {
 
   override onBeforeUpdate(state: State<T>) {
     // capture the previous state before an update takes place
-    this.previousState = state.getSnapshot();
+    this.previousState = state.getState();
   }
 
   override onUpdate(state: State<T>) {
@@ -202,7 +190,7 @@ export class Logger<T = any> extends Middleware<T> {
     console.log(
       "   %cNext State    ",
       "color: rgb(17, 118, 249); font-weight: bold",
-      state.getSnapshot(),
+      state.getState(),
     );
   }
 

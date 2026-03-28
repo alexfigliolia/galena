@@ -26,7 +26,7 @@ export class Profiler<T = any> extends Middleware<T> {
 
   public override onBeforeUpdate(state: State<T>) {
     this.startTime = performance.now();
-    this.previousState = state.getSnapshot();
+    this.previousState = state.getState();
   }
 
   public override onUpdate(state: State<T>) {
@@ -46,7 +46,7 @@ export class Profiler<T = any> extends Middleware<T> {
       console.log(
         "   %cCurrent State    ",
         "color: rgb(17, 118, 249); font-weight: bold",
-        state.getSnapshot(),
+        state.getState(),
       );
     }
   }
