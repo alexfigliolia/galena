@@ -48,7 +48,7 @@
     "eslint-plugin-unused-imports": "^4.4.1",
     "oxfmt": "^0.42.0",
     "oxlint": "^1.36.0",
-    "oxlint-tsgolint": "^0.17.0",
+    "oxlint-tsgolint": "^0.18.1",
     "tsdown": "^0.21.1",
     "typescript": "^6.0.2"
   },
