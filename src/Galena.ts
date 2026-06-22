@@ -62,6 +62,12 @@ export class Galena<T extends Record<string, State<any>>> extends API<
     super(...middleware);
   }
 
+  /**
+   * Get State
+   *
+   * Returns an assembled state object containing each
+   * state instance's current value of state
+   */
   public getState() {
     const result = {} as GalenaState<T>;
     for (const key in this.state) {
@@ -112,7 +118,7 @@ export class Galena<T extends Record<string, State<any>>> extends API<
    * changes. To your callback will be provided the `updated` state
    * instance, along with the entire `state` tree
    */
-  public subscribe = (subscriber: AppSubscriber<T>) => {
+  public subscribe(subscriber: AppSubscriber<T>) {
     const ID = this.Emitter.on("change", subscriber);
     const unsubscribers: (() => void)[] = [];
     for (const key in this.state) {
@@ -132,7 +138,7 @@ export class Galena<T extends Record<string, State<any>>> extends API<
         unsubscribers.pop?.()?.();
       }
     };
-  };
+  }
 
   /**
    * Register Middleware

@@ -2,9 +2,9 @@
 
 Lightning fast, framework agnostic state, that doesn't glue your state operations to your UI components!
 
-[State](#the-state-model)
-[Galena](#the-galena-model)
-[For use with react](#frameworks)
+1. [State](#the-state-model)
+2. [Galena](#the-galena-model)
+3. [For use with react](#frameworks)
 
 ## Installation
 

@@ -70,14 +70,13 @@ export class State<T> extends API<T, NonFunction<T>> {
   public readonly reset = this.withEmission(() => this.initialState);
 
   /**
-   * Get Snapshot
+   * Get State
    *
-   * Returns the current state. Designed for compatibility with
-   * `useSyncExternalStore`
+   * Returns the current state
    */
-  public readonly getState = () => {
+  public getState() {
     return this.state;
-  };
+  }
 
   /**
    * Subscribe
@@ -85,12 +84,12 @@ export class State<T> extends API<T, NonFunction<T>> {
    * Registers a callback to be executed each time state
    * changes. Returns an `unsubscribe` function
    */
-  public readonly subscribe = (fn: Subscriber<T>) => {
+  public subscribe(fn: Subscriber<T>) {
     const ID = this.Emitter.on("change", fn);
     return () => {
       this.Emitter.off("change", ID);
     };
-  };
+  }
 
   /**
    * Register Middleware
