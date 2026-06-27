@@ -18,7 +18,7 @@ import type { State } from "./State";
  * MyState.registerMiddleware(new Logger());
  * ```
  */
-export class Logger<T = any> extends Middleware {
+export class Logger<T = any> extends Middleware<T> {
   private previousState: T | null = null;
 
   override onBeforeUpdate(state: State<T>) {
@@ -26,11 +26,11 @@ export class Logger<T = any> extends Middleware {
   }
 
   override onUpdate(state: State<T>) {
+    const name = Object.getPrototypeOf(state)?.constructor?.name ?? "State";
     console.log(
-      "%cMutation:",
+      `%c${name} %c- Mutation: @${this.time}`,
+      "color: rgb(50, 50, 50); font-weight: bold",
       "color: rgb(187, 186, 186); font-weight: bold",
-      "@",
-      this.time,
     );
     console.log(
       "   %cPrevious State",
