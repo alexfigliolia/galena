@@ -74,9 +74,9 @@ export class State<T> extends API<T, NonFunction<T>> {
    *
    * Returns the current state
    */
-  public getState() {
+  public readonly getState = () => {
     return this.state;
-  }
+  };
 
   /**
    * Subscribe
@@ -84,12 +84,12 @@ export class State<T> extends API<T, NonFunction<T>> {
    * Registers a callback to be executed each time state
    * changes. Returns an `unsubscribe` function
    */
-  public subscribe(fn: Subscriber<T>) {
+  public readonly subscribe = (fn: Subscriber<T>) => {
     const ID = this.Emitter.on("change", fn);
     return () => {
       this.Emitter.off("change", ID);
     };
-  }
+  };
 
   /**
    * Register Middleware
