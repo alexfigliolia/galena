@@ -2,9 +2,11 @@
 
 Lightning fast, framework agnostic state, that doesn't glue your state operations to your UI components!
 
-1. [State](#the-state-model)
-2. [Galena](#the-galena-model)
-3. [For use with react](#frameworks)
+1. [State](#state)
+2. [Galena](#galena)
+3. [Extending State](#extending-state)
+4. [Middleware](#middleware)
+5. [For use with react](#frameworks)
 
 ## Installation
 
@@ -16,54 +18,61 @@ npm i @figliolia/react-galena
 
 ## Basic Usage
 
-### The State Model
+### State
 
-The instancable `State` object in Galena is a reactive wrapper around any value. You can use it to apply reactivity to large objects or simple values
+`State` is a reactive wrapper around any value. It can be used in Vanilla JavaScript, within a UI framework, or even on the server.
 
 ```typescript
 import { State, createState } from "@figliolia/galena";
 
-const myState = new State(/* any value */, /* middleware */);
+const myState = new State(/* any value */);
 // or
-const myState = createState(/* any value */, /* middleware */);
+const myState = createState(/* any value */);
 
+// Get the current value
 const currentValue = myState.getState();
+
+// Subscribe to changes
 const subscriber = myState.subscribe(nextValue => {});
+
+// Unregister the subscription
+subscriber();
+
+// Set new values
 myState.set(/* new value */);
 myState.update(previousValue => /* new value */);
 
-// to reset state back to its original value
+// Reset back to its original value
 myState.reset();
-
-// to unregister the subscription
-subscriber();
 ```
 
-Instances of `State` are ultimately what compose all reactivity in Galena. They can exist as islands compose larger stateful model.
+Instances of `State` compose all reactivity in Galena. They can exist in isolation or compose complex stateful models.
 
-### The Galena Model
+### Galena
 
-`Galena` objects are designed to "link" multiple instances of `State` together to create a "global" application state.
+`Galena` objects are designed to "link" multiple instances of `State` together to create a more complex stateful model
 
 To use it simply define your `State`'s and pass them to a `Galena` instance
 
 ```typescript
 import { Galena, State } from "@figliolia/galena";
 
-const AppState = new Galena(
-  {
-    navigation: new State({
-      currentRoute: "/",
-      navigationMenuOpen: false,
-    }),
-    user: new State({
-      userID: "<id>",
-      membershipTier: "free",
-      friends: ["<id-1>", "<id-2>"],
-    }),
-    // ...and so on
-  } /* middleware */,
-);
+const AppState = new Galena({
+  navigation: new State({
+    currentRoute: "/",
+    navigationMenuOpen: false,
+  }),
+  user: new State({
+    userID: "<id>",
+    membershipTier: "free",
+    friends: ["<id-1>", "<id-2>"],
+  }),
+  shoppingCart: new State({
+    items: [],
+    total: 0.0,
+    lastUpdated: Date.now(),
+  }),
+});
 
 // From here, operations on any slice of state are type-aware
 // and operable via a single construct:
@@ -72,7 +81,7 @@ const subscriber = AppState.subscribe(
     state, // The entire state object at the time of change
     updated, // This individual State instance that was updated
   }) => {
-    // react to state changes
+    // Any callback you wish to run when state changes
   },
 );
 
@@ -86,17 +95,13 @@ UserState.update(state => /* next state */);
 // or
 AppState.update("user", state => /* next state */);
 
-// to get the current value of the state tree
+// to read the current value of the entire state tree
 const state = AppState.getState();
 ```
 
-### Beyond the Basics
+### Extending State
 
-#### Modeling Data with Mutations
-
-`State` in Galena is designed for extension and instancing - a need that ultimately motivated the library's development.
-
-Let's take a look at a working example
+`State` is designed for extension. With it, you can create robust reactivity models with mutations and collocated logic
 
 ```typescript
 import { State } from "@figliolia/galena";
@@ -144,8 +149,8 @@ import { Galena } from "@figliolia/galena";
 import { MyGameState } from "./MyGameState";
 
 const MyAppState = new Galena({
-  player1: new MyGameState(),
-  player2: new MyGameState(),
+  player1: new MyGameState("<player1-id>"),
+  player2: new MyGameState("<player2-id>"),
 });
 
 // Operate
@@ -157,14 +162,47 @@ MyAppState.get("player2").raiseLevel();
 
 Middleware provides a developer API for building out custom tooling for your state.
 
-Building middleware is as simple as extending `Galena`'s `Middleware` class and registering on your state.
+Out of the box, this library comes with middleware for Logging and Profiling changes to your state.
 
-Here's a quick example using the redux-like logger provided by this package:
+The `Logger` is a redux-style logger that'll log state changes to the console.
+
+<img src="media/Logging.png" />
+
+The `Profiler` allows you to set a millisecond theshold, and will warn you any time a state update exceeds that threshold
+
+<img src="media/Profiling.png" />
+
+#### Applying Middleware
+
+Middleware can be applied to individual state instances or an entire Galena tree:
+
+```typescript
+import { Logger, Profiler } from "@figliolia/galena";
+
+// To apply middleware to all instances of `State`
+// attached to a `Galena` instance
+const MyAppState = new Galena(
+  { /* state tree */ },
+  new Logger(),
+  new Profiler()
+);
+
+// To apply middleware to a single piece of `State`
+const MyState = new State(
+  /* value */,
+  new Logger(),
+  new Profiler()
+);
+```
+
+#### Building Your Own Middleware
+
+To build your own middleware, extend the `Middleware` and override any of it's methods. Here's a quick example of how to build a redux-like logging middleware for your state:
 
 ```typescript
 import { Middleware, type State } from "@figliolia/galena";
 
-export class Logger<T = any> extends Middleware<T> {
+export class ReduxStyleLogger<T = any> extends Middleware<T> {
   private previousState: T | null = null;
 
   override onBeforeUpdate(state: State<T>) {
@@ -207,31 +245,6 @@ export class Logger<T = any> extends Middleware<T> {
   }
 }
 ```
-
-Registering middleware is simple:
-
-```typescript
-import { Logger, Profiler } from "@figliolia/galena";
-
-// To apply middleware to all instances of `State`
-// attached to a `Galena` instance
-
-const MyAppState = new Galena({
-  // state
-}, new Logger(), new Profiler());
-
-// To apply middleware to a single piece of `State`
-const MyState = new State(
-  /* reactive value */,
-  new Logger(),
-  new Profiler()
-);
-```
-
-In your console you'll now see logs like the following:
-<img src="media/Logging.png" />
-And Profiler warnings such as thing one
-<img src="media/Profiling.png" />
 
 ### Frameworks
 
