@@ -30,7 +30,7 @@ import type { NonFunction, Setter, Subscriber } from "./types";
  */
 export class State<T> extends API<T, NonFunction<T>> {
   private state: NonFunction<T>;
-  private readonly Emitter = new EventEmitter<{ change: NonFunction<T> }>();
+  private readonly Emitter = new EventEmitter<{ change: [NonFunction<T>] }>();
   constructor(
     public readonly initialState: NonFunction<T>,
     ...middleware: Middleware<T>[]

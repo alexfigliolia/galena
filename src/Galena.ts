@@ -54,7 +54,7 @@ export class Galena<T extends Record<string, State<any>>> extends API<
   GalenaSnapshot<T>,
   StateTypes<T>
 > {
-  private Emitter = new EventEmitter<{ change: GalenaSnapshot<T> }>();
+  private Emitter = new EventEmitter<{ change: [GalenaSnapshot<T>] }>();
   constructor(
     public readonly state: T,
     ...middleware: Middleware<StateTypes<T>>[]
